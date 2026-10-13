@@ -108,7 +108,6 @@ export default {
         { key: 'devices', icon: '/static/icon/home/device.svg' },
         { key: 'alarms', icon: '/static/icon/home/bell.svg' },
         { key: 'automation', icon: '/static/icon/home/bolt.svg' },
-        { key: 'boards', icon: '/static/icon/home/grid.svg' },
         { key: 'groups', icon: '/static/icon/home/folder.svg' },
         { key: 'rules', icon: '/static/icon/home/ticket.svg' },
         { key: 'scenes', icon: '/static/icon/home/scene.svg' },
@@ -223,7 +222,6 @@ export default {
     openGroupPicker() { uni.setStorageSync('dashboard_open_groups', true); this.openDevices() },
     openShortcut(key) {
       if (key === 'devices') return this.openDevices()
-      if (key === 'boards') return uni.switchTab({ url: '/pages/dashboard/boards' })
       if (key === 'groups') return this.openGroupPicker()
       if (key === 'account') return uni.switchTab({ url: '/pages/account/index' })
       if (key === 'automation' || key === 'scenes') {

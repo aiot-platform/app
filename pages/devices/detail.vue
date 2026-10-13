@@ -89,6 +89,7 @@ import DeviceOverviewTab from '@/features/devices/components/device-overview-tab
 import DeviceAutomationTab from '@/features/devices/components/device-automation-tab.vue'
 import DeviceAlarmTab from '@/features/devices/components/device-alarm-tab.vue'
 import DeviceInformationTab from '@/features/devices/components/device-information-tab.vue'
+import { getServerBase } from '@/config/server'
 
 const DEVICE_SNAPSHOT_KEY = 'device_detail_preview'
 
@@ -136,8 +137,7 @@ export default {
 			const path = this.device.image_url || this.device.device_config?.image_url
 			if (!path || this.imageLoadFailed) return '/static/image/default-device-hub.png'
 			if (/^https?:\/\//i.test(path)) return path
-			const server = String(uni.getStorageSync('serverAddress') || 'https://demo.thingspanel.cn').replace(/\/+$/, '').replace(/\/api\/v1$/i, '')
-			return `${server}/${String(path).replace(/^\/+/, '')}`
+			return `${getServerBase()}/${String(path).replace(/^\/+/, '')}`
 		},
 		deviceTypeLabel() {
 			return {

@@ -10,7 +10,9 @@ const context = {
   clearTimeout(id) { timers.delete(id) },
   uni: { getStorageSync: () => '', request(options) { requestOptions = options; return { abort() { aborts++ } } } }
 }
-const request = vm.runInNewContext(read('api/client.js').replace('export function', 'function').replace('export default { request }', 'request'), context)
+// config/server.js 以经典脚本方式注入：去掉 export，import.meta 在 vm 中不可用，替换为空
+const serverConfig = read('config/server.js').replaceAll('export ', '').replace(/import\.meta\.env\?\.VITE_SERVER_URL/g, "''")
+const request = vm.runInNewContext(serverConfig + '\n' + read('api/client.js').replace(/^import .*$/gm, '').replace('export function', 'function').replace('export default { request }', 'request'), context)
 const first = request({ url: '/test' })
 assert.equal(requestOptions.timeout, 20000)
 const rejected = assert.rejects(first, error => error.code === 'REQUEST_TIMEOUT')

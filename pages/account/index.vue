@@ -131,7 +131,7 @@ import { openHomePreference } from '@/services/dashboard-home'
 	},
 		methods: {
             async replayBoardGuide() {
-                try { const preference = await openHomePreference(); preference.resetGuides(); uni.switchTab({ url: '/pages/dashboard/boards' }) }
+                try { const preference = await openHomePreference(); preference.resetGuides(); uni.navigateTo({ url: '/pages/dashboard/boards' }) }
                 catch (error) { uni.showToast({ title: error.message || '请重试', icon: 'none' }) }
             },
             openHomeSettings() { uni.navigateTo({ url: '/pages/account/home-preference' }) },

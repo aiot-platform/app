@@ -209,12 +209,6 @@
 				"selectedIconPath": "static/tabbar/dashboard-selected.png"
 			},
 			{
-				"pagePath": "pages/dashboard/boards",
-				"text": "%pages.boardsTitle%",
-				"iconPath": "static/tabbar/boards.png",
-				"selectedIconPath": "static/tabbar/boards-selected.png"
-			},
-			{
 				"pagePath": "pages/devices/index",
 				"text": "%pages.deviceList%",
 				"iconPath": "static/tabbar/devices.png",

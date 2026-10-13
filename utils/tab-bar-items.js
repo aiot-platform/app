@@ -16,7 +16,6 @@
  */
 export const TAB_BAR_ITEMS = [
   { pagePath: 'pages/dashboard/index', key: 'pages.dashboardTitle' },
-  { pagePath: 'pages/dashboard/boards', key: 'pages.boardsTitle' },
   { pagePath: 'pages/devices/index', key: 'pages.deviceList' },
   { pagePath: 'pages/automation/index', key: 'pages.automationTitle' },
   { pagePath: 'pages/account/index', key: 'pages.myAccount' }

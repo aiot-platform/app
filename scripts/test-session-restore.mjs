@@ -3,7 +3,8 @@ import fs from 'node:fs'
 import vm from 'node:vm'
 const read = path => fs.readFileSync(new URL(`../${path}`, import.meta.url), 'utf8')
 const clearSessionStorage = vm.runInNewContext(read('features/auth/session.js').replaceAll('export ', '') + '; clearSessionStorage')
-const restoreSession = vm.runInNewContext(read('features/auth/restore-session.js').replace(/^import .*$/gm, '').replace('export async function', 'async function') + '; restoreSession', { clearSessionStorage })
+const serverConfig = vm.runInNewContext(read('config/server.js').replaceAll('export ', '').replace(/import\.meta\.env\?\.VITE_SERVER_URL/g, "''") + '; ({ getServerAddress, DEFAULT_SERVER_URL })')
+const restoreSession = vm.runInNewContext(read('features/auth/restore-session.js').replace(/^import .*$/gm, '').replace('export async function', 'async function') + '; restoreSession', { clearSessionStorage, getServerAddress: serverConfig.getServerAddress })
 let values
 const storage = { getStorageSync: key => values[key], removeStorageSync: key => delete values[key] }
 const reset = () => { values = { access_token: 'saved', email: 'test@example.test', password: 'remembered', serverAddress: 'https://example.test/api/v1/' } }
@@ -33,7 +34,7 @@ console.log('Session restore passed: saved token, expiry, network failure, crede
 let outcome = 'valid', jumps = 0, toasts = 0
 const loginScript = read('pages/login/index.vue').match(/<script>([\s\S]*?)<\/script>/)[1].replace(/import\s+[\s\S]*?\sfrom\s+['"][^'"]+['"];?/g, '')
 const login = vm.runInNewContext(loginScript.replace('export default', 'const page =') + '; page', {
-  uniIcons: {}, BoardLoading: {}, restoreSession: async () => outcome,
+  uniIcons: {}, BoardLoading: {}, restoreSession: async () => outcome, DEFAULT_SERVER_URL: serverConfig.DEFAULT_SERVER_URL,
   uni: { switchTab(options) { jumps++; assert.equal(options.url, '/pages/dashboard/index'); options.success() }, showToast() { toasts++ } }
 })
 for (const result of ['valid', 'unavailable', 'expired', 'missing', 'stale']) {

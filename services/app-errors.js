@@ -1,5 +1,8 @@
 // Local, bounded diagnostics only. Never persist raw errors, props, URLs or credentials.
 const records = []
+function isDevBuild() {
+  try { return Boolean(import.meta.env?.DEV) } catch { return false }
+}
 let reporting = false
 export function reportAppError(error, source = 'runtime') {
   if (reporting) return
@@ -15,6 +18,8 @@ export function reportAppError(error, source = 'runtime') {
     records.push({ time: now, page, source: category, name, count: 1 })
     if (records.length > 30) records.shift()
     console.warn('[AppError]', category, page, name)
+    // 仅开发环境输出原始错误，便于定位；生产包不打印，保持上面“不记录原始错误”的约定
+    if (isDevBuild()) console.error('[AppError:dev]', error)
   } catch { /* Error reporting must never become another application error. */ }
   finally { reporting = false }
 }

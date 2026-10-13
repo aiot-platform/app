@@ -14,12 +14,18 @@ importers:
       echarts:
         specifier: ^5.4.3
         version: 5.6.0
+      tslib:
+        specifier: 2.3.0
+        version: 2.3.0
       vue:
         specifier: 3.4.21
         version: 3.4.21
       vue-i18n:
         specifier: 9.1.9
         version: 9.1.9(vue@3.4.21)
+      zrender:
+        specifier: 5.6.1
+        version: 5.6.1
 
 packages:
 

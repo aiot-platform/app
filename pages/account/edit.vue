@@ -46,6 +46,8 @@
 </template>
 
 <script>
+import { getServerBase } from '@/config/server'
+
 export default {
 	data() {
 		return {
@@ -250,8 +252,7 @@ export default {
 		uploadAvatar(filePath) {
 
 
-			const serverUrl = uni.getStorageSync('serverAddress');
-			const baseUrl = serverUrl || 'https://demo.thingspanel.cn';
+			const baseUrl = getServerBase();
 			const token = uni.getStorageSync('access_token');
 
 			uni.uploadFile({

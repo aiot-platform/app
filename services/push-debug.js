@@ -1,3 +1,5 @@
+import { getServerAddress } from '@/config/server'
+
 /** 推送排查日志：不记录密码、token 或完整通知内容。 */
 export function logPushDebug(stage, details = {}, level = 'info') {
   const logger = level === 'error' ? console.error : level === 'warn' ? console.warn : console.log
@@ -6,7 +8,7 @@ export function logPushDebug(stage, details = {}, level = 'info') {
 
 export function pushDebugContext() {
   return {
-    server: uni.getStorageSync('serverAddress') || 'https://demo.thingspanel.cn',
+    server: getServerAddress(),
     email: uni.getStorageSync('email') || '',
     hasToken: Boolean(uni.getStorageSync('access_token')),
     cachedPushId: uni.getStorageSync('push_id') || ''

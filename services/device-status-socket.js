@@ -1,3 +1,5 @@
+import { getWsBase } from '@/config/server'
+
 /**
  * 设备在线状态 WebSocket 管理类
  * 负责管理设备状态的WebSocket连接、订阅和消息处理
@@ -31,8 +33,8 @@ class DeviceWebSocketManager {
 			return false;
 		}
 
-		const serverUrl = uni.getStorageSync('serverAddress') || '';
-		const wsUrl = serverUrl.replace('http://', 'ws://').replace('https://', 'wss://') + '/api/v1/device/online/status/ws/batch';
+		// 统一由 config/server.js 推导：http → ws，https → wss，并兼容地址末尾带 /api/v1
+		const wsUrl = getWsBase() + '/api/v1/device/online/status/ws/batch';
 
 		// 保存回调函数
 		this.onMessageCallback = options.onMessage;

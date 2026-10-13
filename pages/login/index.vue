@@ -72,6 +72,7 @@ import { AVAILABLE_LANGUAGES, changeLanguage } from '@/lang/index.js'
 import BoardLoading from '@/components/board-loading/index.vue'
 import { restoreSession } from '@/features/auth/restore-session'
 import { logPushDebug, pushDebugContext, pushDebugError } from '@/services/push-debug'
+import { DEFAULT_SERVER_URL } from '@/config/server'
 // 
 export default {
 	components: {
@@ -98,7 +99,7 @@ export default {
 	},
 	computed: {
 		displayServer() {
-			return String(this.server || 'https://demo.thingspanel.cn')
+			return String(this.server || DEFAULT_SERVER_URL)
 				.replace(/^https?:\/\//i, '')
 				.replace(/\/+$/, '');
 		}
@@ -148,7 +149,7 @@ export default {
 	},
 	methods: {
 		startServerEdit() {
-			this.server = this.server || 'https://demo.thingspanel.cn';
+			this.server = this.server || DEFAULT_SERVER_URL;
 			this.serverEditing = true;
 		},
 		finishServerEdit() {
@@ -271,11 +272,7 @@ export default {
 		toLogin() {
             if (this.loading) return;
             this.loading = true;
-			if (this.server) {
-				uni.setStorageSync('serverAddress', this.server)
-			} else {
-				uni.setStorageSync('serverAddress', 'https://demo.thingspanel.cn')
-			}
+			uni.setStorageSync('serverAddress', this.server || DEFAULT_SERVER_URL)
 
 			let data = {
 				email: this.email,
@@ -358,11 +355,7 @@ export default {
 			});
 		},
 		goToRegister() {
-			if (this.server) {
-				uni.setStorageSync('serverAddress', this.server)
-			} else {
-				uni.setStorageSync('serverAddress', 'https://demo.thingspanel.cn')
-			}
+			uni.setStorageSync('serverAddress', this.server || DEFAULT_SERVER_URL)
 			uni.navigateTo({
 				url: './register'
 			});

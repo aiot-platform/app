@@ -1,8 +1,7 @@
-const DEFAULT_SERVER_URL = 'https://demo.thingspanel.cn'
+import { getServerAddress } from '@/config/server'
 
 function getServerUrl() {
-  const configuredServer = uni.getStorageSync('serverAddress')
-  return String(configuredServer || DEFAULT_SERVER_URL).replace(/\/$/, '')
+  return getServerAddress().replace(/\/$/, '')
 }
 
 function buildRequestUrl(url) {

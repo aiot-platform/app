@@ -1,3 +1,5 @@
+import { getServerAddress } from '@/config/server'
+
 /** 本地开发时社区版 Vite 默认端口 */
 const LOCAL_H5_DEV_BASE = 'http://localhost:5002'
 
@@ -10,7 +12,7 @@ export function getPlatformWebBase() {
     return String(webViewBase).replace(/\/$/, '')
   }
 
-  const server = uni.getStorageSync('serverAddress') || 'https://demo.thingspanel.cn'
+  const server = getServerAddress()
 
   // 本地 API（如 localhost:8000）通常不含最新 H5，开发时默认走 Vite dev server
   if (/^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?/i.test(String(server))) {

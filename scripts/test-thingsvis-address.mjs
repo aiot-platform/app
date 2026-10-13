@@ -1,7 +1,10 @@
 import assert from 'node:assert/strict'
 import fs from 'node:fs'
 
+const toDataUrl = code => `data:text/javascript;base64,${Buffer.from(code).toString('base64')}`
+const serverConfigUrl = toDataUrl(fs.readFileSync(new URL('../config/server.js', import.meta.url), 'utf8'))
 const source = fs.readFileSync(new URL('../utils/thingsvis-address.js', import.meta.url), 'utf8')
+  .replace("'@/config/server'", JSON.stringify(serverConfigUrl))
 const { resolveThingsVisAddresses: resolve, getThingsVisSettings: get, saveThingsVisSettings: save, hasCustomAddressSettings: hasCustom } = await import(`data:text/javascript;base64,${Buffer.from(source).toString('base64')}`)
 const memory = new Map()
 const storage = { getStorageSync: key => memory.get(key), setStorageSync: (key, value) => memory.set(key, value) }

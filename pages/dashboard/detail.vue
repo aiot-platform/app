@@ -10,7 +10,7 @@ export default {
   onShow() { this.visible = true },
   onHide() { this.visible = false },
   onBackPress(event) { return event.from !== 'navigateBack' && Boolean(this.$refs.viewer?.handleBack()) },
-  methods: { goBack() { uni.navigateBack({ fail: () => uni.switchTab({ url: '/pages/dashboard/boards' }) }) } }
+  methods: { goBack() { uni.navigateBack({ fail: () => uni.switchTab({ url: '/pages/dashboard/index' }) }) } }
 }
 </script>
 
