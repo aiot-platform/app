@@ -9,6 +9,8 @@
  * WebSocket 地址由 HTTP 地址自动推导：http → ws，https → wss。
  * 地址填写 nginx 入口即可（如 http://192.168.1.10:8080），末尾带不带 /api/v1 都可以。
  */
+import { uniStorage } from '@/utils/uni-storage'
+
 const FALLBACK_SERVER_URL = 'https://demo.thingspanel.cn'
 
 function readServerUrlFromEnv() {
@@ -24,7 +26,8 @@ export const DEFAULT_SERVER_URL = String(readServerUrlFromEnv() || FALLBACK_SERV
 
 /** 当前生效的服务器地址（原样，可能带 /api/v1） */
 export function getServerAddress(storage) {
-  const source = storage || uni
+  // 不能写 storage || uni：H5 发行包摇树后裸 uni 对象上没有 getStorageSync
+  const source = storage || uniStorage
   return String(source.getStorageSync('serverAddress') || DEFAULT_SERVER_URL)
 }
 

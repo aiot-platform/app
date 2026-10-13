@@ -323,7 +323,10 @@ export default {
 					this.handleError(translatedMessage);
 				}
 			}).catch(err => {
-				this.handleError(this.$t('pages.login.networkError')); // 处理网络错误
+				// 网络失败与代码异常都会进到这里，打印原始错误并在提示中带上原因，便于定位
+				console.error('[login] failed', err);
+				const detail = err?.errMsg || err?.message || (err?.statusCode ? `HTTP ${err.statusCode}` : '');
+				this.handleError(detail ? `${this.$t('pages.login.networkError')}（${detail}）` : this.$t('pages.login.networkError'));
 			}).finally(() => {
                 this.loading = false;
 

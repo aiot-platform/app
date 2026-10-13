@@ -1,0 +1,4 @@
+# 只把 H5 打包产物发送给 docker build，其余源码 / node_modules 都排除
+*
+!unpackage/dist/build/web
+!unpackage/dist/build/h5

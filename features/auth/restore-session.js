@@ -1,9 +1,10 @@
 import httpClient from '@/api/client'
 import { clearSessionStorage } from './session'
 import { getServerAddress } from '@/config/server'
+import { uniStorage } from '@/utils/uni-storage'
 
 // Validate saved credentials without invoking the global login-expired modal.
-export async function restoreSession({ storage = uni, request = httpClient.request } = {}) {
+export async function restoreSession({ storage = uniStorage, request = httpClient.request } = {}) {
   const token = storage.getStorageSync('access_token')
   if (!token) return 'missing'
   const server = getServerAddress(storage)

@@ -1,0 +1,15 @@
+# 移动端 H5 发布镜像（供 ../docker-compose.yaml 中的 h5 服务使用）
+# 本项目是 HBuilderX 工程（无 CLI 构建依赖），无法在容器内从源码编译，
+# 因此先在 HBuilderX 中「发行 → 网站-PC Web或手机H5」，再用本镜像发布产物。
+# 页面由 docker-compose-midware.yaml 中的 nginx 提供服务（http://<host>:8080/h5/），
+# 本镜像运行时只负责把产物拷贝到共享目录 /opt/docker-data/nginx/h5
+
+FROM alpine:3.20
+# 新版 HBuilderX 产物目录为 unpackage/dist/build/web，旧版为 unpackage/dist/build/h5
+COPY unpackage/dist/build/ /build/
+RUN if [ -f /build/web/index.html ]; then mv /build/web /dist; \
+    elif [ -f /build/h5/index.html ]; then mv /build/h5 /dist; \
+    else echo 'H5 产物不存在，请先在 HBuilderX 中发行 H5' && exit 1; fi \
+    && rm -rf /build
+# /html 挂载为 nginx 的 H5 目录；先清空旧版本再拷贝
+CMD ["sh", "-c", "mkdir -p /html && find /html -mindepth 1 -delete && cp -r /dist/. /html/ && echo 'h5 dist published'"]
