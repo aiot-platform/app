@@ -1,6 +1,6 @@
 <template>
 	<view class="tp-box">
-        <app-tab-header meta-below :title="$t('pages.devices.pageHeading')" :meta="(overviewState === 'ready' ? deviceTotal : '—') + ' ' + $t('pages.devices.totalUnit')">
+        <app-tab-header meta-below :title="$t('pages.devices.pageHeading')" :meta="(deviceStatsState === 'ready' ? deviceTotal : '—') + ' ' + $t('pages.devices.totalUnit')">
 				<view class="header-actions tp-flex tp-flex-a-c">
 					<view class="notify-action tp-flex tp-flex-j-c tp-flex-a-c" role="button" :aria-label="$t('scanActivation.scan')" @click="scanDevice">
 						<image src="/static/icon/home/scan.svg" mode="aspectFit" />
@@ -15,19 +15,19 @@
 			<view class="overview-card" :aria-busy="overviewState === 'loading'">
 				<view class="overview-metrics">
 					<view class="metric-item metric-online">
-						<view class="metric-top"><view class="metric-icon-wrap"><image class="metric-icon" src="/static/icon/device-stat-online.svg" mode="aspectFit" aria-hidden="true" /></view><text class="metric-value">{{ overviewState === 'ready' ? onlineCount : '—' }}</text></view>
+						<view class="metric-top"><view class="metric-icon-wrap"><image class="metric-icon" src="/static/icon/device-stat-online.svg" mode="aspectFit" aria-hidden="true" /></view><text class="metric-value">{{ deviceStatsState === 'ready' ? onlineCount : '—' }}</text></view>
 						<text class="metric-label">{{ $t('pages.devices.online') }}</text>
-						<text class="metric-rate">{{ overviewState === 'ready' ? onlineRate + '%' : '—' }}</text>
+						<text class="metric-rate">{{ deviceStatsState === 'ready' ? onlineRate + '%' : '—' }}</text>
 					</view>
 					<view class="metric-item metric-offline">
-						<view class="metric-top"><view class="metric-icon-wrap"><image class="metric-icon" src="/static/icon/device-stat-offline.svg" mode="aspectFit" aria-hidden="true" /></view><text class="metric-value">{{ overviewState === 'ready' ? offlineCount : '—' }}</text></view>
+						<view class="metric-top"><view class="metric-icon-wrap"><image class="metric-icon" src="/static/icon/device-stat-offline.svg" mode="aspectFit" aria-hidden="true" /></view><text class="metric-value">{{ deviceStatsState === 'ready' ? offlineCount : '—' }}</text></view>
 						<text class="metric-label">{{ $t('pages.devices.offline') }}</text>
-						<text class="metric-rate">{{ overviewState === 'ready' ? offlineRate + '%' : '—' }}</text>
+						<text class="metric-rate">{{ deviceStatsState === 'ready' ? offlineRate + '%' : '—' }}</text>
 					</view>
 					<view class="metric-item metric-alarm">
-						<view class="metric-top"><view class="metric-icon-wrap"><image class="metric-icon" src="/static/icon/device-stat-alarm.svg" mode="aspectFit" aria-hidden="true" /></view><text class="metric-value">{{ overviewState === 'ready' ? alarmCount : '—' }}</text></view>
+						<view class="metric-top"><view class="metric-icon-wrap"><image class="metric-icon" src="/static/icon/device-stat-alarm.svg" mode="aspectFit" aria-hidden="true" /></view><text class="metric-value">{{ alarmStatsState === 'ready' ? alarmCount : '—' }}</text></view>
 						<text class="metric-label">{{ $t('pages.devices.alarmDevices') }}</text>
-						<text class="metric-rate">{{ overviewState === 'ready' ? alarmRate + '%' : '—' }}</text>
+						<text class="metric-rate">{{ alarmStatsState === 'ready' && deviceStatsState === 'ready' ? alarmRate + '%' : '—' }}</text>
 					</view>
 				</view>
 				<view class="overview-footer" v-if="overviewState === 'loading'">{{ $t('pages.devices.statsLoading') }}</view>
@@ -142,6 +142,9 @@
 </template>
 
 <script>
+// #ifdef MP-WEIXIN
+import { loadMiniDeviceOverview } from '@/services/mini-device-overview'
+// #endif
 import { alarmHistory } from '@/api/modules/alarm'
 import { deviceEmptyState } from '@/utils/image-assets'
 import AppSearch from '@/components/app-search/index.vue'
@@ -245,6 +248,11 @@ export default {
 			activeStatusFilter: 'all',
 			deviceViewMode: 'grid',
 			overviewState: 'loading',
+			// #ifdef MP-WEIXIN
+			miniDeviceStatsState: 'loading',
+			miniAlarmStatsState: 'loading',
+			overviewRequestSequence: 0,
+			// #endif
 			deviceTotal: 0,
 			overviewTotals: { online: 0, offline: 0, alarm: 0 },
 			filterTotals: { total: 0, online: 0, offline: 0, alarm: 0 },
@@ -255,6 +263,22 @@ export default {
 		}
 	},
 	computed: {
+		deviceStatsState() {
+			// #ifdef MP-WEIXIN
+			return this.miniDeviceStatsState
+			// #endif
+			// #ifndef MP-WEIXIN
+			return this.overviewState
+			// #endif
+		},
+		alarmStatsState() {
+			// #ifdef MP-WEIXIN
+			return this.miniAlarmStatsState
+			// #endif
+			// #ifndef MP-WEIXIN
+			return this.overviewState
+			// #endif
+		},
 		onlineCount() { return this.overviewTotals.online },
 		offlineCount() { return this.overviewTotals.offline },
 		alarmCount() { return this.overviewTotals.alarm },
@@ -653,6 +677,34 @@ export default {
 			this.getDeviceList()
 		},
 		getOverviewStats() {
+			// #ifdef MP-WEIXIN
+			const sequence = ++this.overviewRequestSequence
+			const session = () => JSON.stringify([uni.getStorageSync('serverAddress'), uni.getStorageSync('access_token')])
+			const initial = session()
+			const current = () => sequence === this.overviewRequestSequence && session() === initial
+			this.overviewState = this.miniDeviceStatsState = this.miniAlarmStatsState = 'loading'
+			return loadMiniDeviceOverview({
+				device: getDeviceOverview,
+				alarm: getAlarmDeviceCount,
+				onDevice: value => {
+					if (!current()) return
+					this.miniDeviceStatsState = value ? 'ready' : 'error'
+					if (value) {
+						this.deviceTotal = value.total
+						this.overviewTotals = { ...this.overviewTotals, online: value.online, offline: value.offline }
+					}
+				},
+				onAlarm: value => {
+					if (!current()) return
+					this.miniAlarmStatsState = value !== null ? 'ready' : 'error'
+					if (value !== null) this.overviewTotals = { ...this.overviewTotals, alarm: value }
+				}
+			}).then(() => {
+				if (!current()) return
+				this.overviewState = this.miniDeviceStatsState === 'ready' && this.miniAlarmStatsState === 'ready' ? 'ready' : 'error'
+			})
+			// #endif
+			// #ifndef MP-WEIXIN
 			this.overviewState = 'loading'
 			return Promise.all([
 				getDeviceOverview(),
@@ -676,6 +728,7 @@ export default {
 				this.overviewState = 'error'
 				console.warn('Failed to load device overview statistics:', error)
 			})
+			// #endif
 		},
 		getFilteredDeviceStats() {
 			const requestSequence = ++this.statsRequestSequence

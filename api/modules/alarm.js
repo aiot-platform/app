@@ -1,9 +1,17 @@
 import api from '@/api/request'
 import { readAlarmHistory, readAlarmDeviceCount, readAlarmOccurrenceCount, scopedAlarmRequest } from '@/services/alarm-reading'
 import { loadAlarmDetail } from '@/services/alarm-detail'
+// #ifdef MP-WEIXIN
+import { withMiniAlarmCompatibility } from '@/services/mini-alarm-compat'
+// #endif
 
 function requestForSession() {
+  // #ifdef MP-WEIXIN
+  return scopedAlarmRequest(withMiniAlarmCompatibility(api.apiRequest), () => JSON.stringify([uni.getStorageSync('serverAddress'), uni.getStorageSync('access_token')]))
+  // #endif
+  // #ifndef MP-WEIXIN
   return scopedAlarmRequest(api.apiRequest, () => JSON.stringify([uni.getStorageSync('serverAddress'), uni.getStorageSync('access_token')]))
+  // #endif
 }
 export const alarmOccurrenceCount = (range) => readAlarmOccurrenceCount(requestForSession(), range)
 export const alarmDeviceCount = () => readAlarmDeviceCount(requestForSession())
