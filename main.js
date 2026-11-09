@@ -20,6 +20,9 @@ import AppActionSheet from '@/components/app-action-sheet/index.vue';
 //接口访问请求
 import api from '@/api/request'
 import { updateCurrentPageTitle } from '@/utils/page-title'
+// #ifdef MP-WEIXIN
+import { requireMiniSession } from '@/features/auth/mini-session'
+// #endif
 
 export function createApp() {
     const app = createSSRApp(App)
@@ -34,6 +37,11 @@ export function createApp() {
         },
         // #endif
         onShow() {
+            // #ifdef MP-WEIXIN
+            const pages = getCurrentPages()
+            const page = pages[pages.length - 1]
+            if (page?.route && !requireMiniSession(page.route)) return
+            // #endif
             updateCurrentPageTitle(i18n)
             updateTabbarText()
         }

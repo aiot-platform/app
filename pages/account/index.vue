@@ -58,6 +58,9 @@
 </template>
 <script>
 import { resetNotificationBinding } from '@/services/notification-permission'
+// #ifdef MP-WEIXIN
+import { logoutMiniSession } from '@/features/auth/mini-session'
+// #endif
 import NotificationGuide from '@/components/notification-guide/index.vue'
 import { openHomePreference } from '@/services/dashboard-home'
 import { getAppVersionLabel } from '@/utils/app-version'
@@ -174,6 +177,12 @@ import { getAppVersionLabel } from '@/utils/app-version'
 			},
 			//退出登录
 			async toQuitLogin() {
+                // #ifdef MP-WEIXIN
+                this.logoutConfirmVisible = false
+                resetNotificationBinding()
+                await logoutMiniSession()
+                return
+                // #endif
 				const pushId = uni.getStorageSync('push_id');
 				if (pushId) {
 					try {

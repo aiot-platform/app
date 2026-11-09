@@ -102,6 +102,7 @@ import { buildDeviceCard } from '@/features/devices/utils/device-card'
 import { formatAlarmTime } from '@/utils/datetime'
 // #ifdef MP-WEIXIN
 import { prepareShareImage, SHARE_IMAGES } from '@/services/mp-share'
+import { requireMiniSession } from '@/features/auth/mini-session'
 // #endif
 
 export default {
@@ -132,6 +133,9 @@ export default {
     }
   },
   onShow() {
+    // #ifdef MP-WEIXIN
+    if (!requireMiniSession()) return
+    // #endif
     this.homeVisible = true; this.openHome()
     // #ifdef MP-WEIXIN
     uni.showShareMenu({ menus: ['shareAppMessage', 'shareTimeline'] })
@@ -215,6 +219,9 @@ export default {
       }
     },
     async refresh() {
+      // #ifdef MP-WEIXIN
+      if (!requireMiniSession()) return
+      // #endif
       if (this.loading) return
       this.loading = true
       this.errors = []
