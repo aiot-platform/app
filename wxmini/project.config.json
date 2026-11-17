@@ -1,0 +1,35 @@
+{
+  "description": "宠物看护控制面板（微信小程序原生 + 阿里云 RTC）",
+  "packOptions": {
+    "ignore": [],
+    "include": []
+  },
+  "setting": {
+    "urlCheck": false,
+    "es6": true,
+    "enhance": true,
+    "postcss": true,
+    "minified": true,
+    "newFeature": true,
+    "nodeModules": false,
+    "coverView": true,
+    "showShadowRootInWxmlPanel": true
+  },
+  "compileType": "miniprogram",
+  "libVersion": "3.5.5",
+  "appid": "wxa3a2fa163a7a57f4",
+  "projectname": "pet-wxmini",
+  "miniprogramRoot": "./",
+  "condition": {
+    "miniprogram": {
+      "list": [
+        {
+          "name": "宠物面板（演示）",
+          "pathName": "pages/pet/index",
+          "query": "demo=1&device_id=demo-device",
+          "scene": null
+        }
+      ]
+    }
+  }
+}

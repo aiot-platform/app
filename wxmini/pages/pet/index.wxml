@@ -1,0 +1,263 @@
+<!-- 宠物看护控制面板：还原 pet-prd/音视频交互原型.html 的单屏四 Tab 布局 -->
+<view class="screen">
+  <!-- 状态栏（自定义导航） -->
+  <view class="status" style="height:{{statusBar}}px">
+    <text>{{clock}}</text>
+    <text>5G ▂▄▆ 🔋</text>
+  </view>
+
+  <!-- 导航栏：首页显示设备设置，其余页签显示返回 -->
+  <view class="nav">
+    <button class="nav-btn" style="visibility:{{tab==='home'?'hidden':'visible'}}" bindtap="onBack">
+      <image class="i" src="{{ic.back}}" mode="aspectFit" />
+    </button>
+    <view class="nav-title">{{title}}</view>
+    <button class="nav-btn" style="visibility:{{tab==='home'?'visible':'hidden'}}" bindtap="onSettings">
+      <image class="i" src="{{ic.dots}}" mode="aspectFit" />
+    </button>
+  </view>
+
+  <!-- ============ 首页：实时 ============ -->
+  <scroll-view class="scroll" scroll-y wx:if="{{tab==='home'}}">
+    <view class="alert {{alert.cls}}" wx:if="{{alert}}">
+      <image class="i" src="{{alert.icon}}" mode="aspectFit" />
+      <text class="alert-text">{{alert.text}}{{alert.count>1?'（共 '+alert.count+' 条）':''}}</text>
+      <button class="alert-x" bindtap="dismissAlert"><image class="i-sm" src="{{alert.closeIcon}}" mode="aspectFit" /></button>
+    </view>
+
+    <view class="pet">
+      <view class="avatar"><image class="avatar-img" src="{{ic.dog}}" mode="aspectFit" /></view>
+      <view class="grow">
+        <view class="pet-h1">
+          <text class="pet-name">{{petName}}</text>
+          <text class="tag">{{petTag}}</text>
+        </view>
+        <view class="meta">{{petMeta}}</view>
+      </view>
+      <view class="live-chip">
+        <view class="dot" style="background:{{online?'#36c58f':'#bbb'}}"></view>
+        <text>{{online?'在线':'离线'}}</text>
+      </view>
+    </view>
+
+    <!-- 播放器 -->
+    <view class="player {{playing?'playing':''}} {{full&&playing?'full':''}}">
+      <!-- 真实链路：阿里云小程序 RTC SDK 写入 live-pusher / live-player 所需地址 -->
+      <block wx:if="{{rtcMode==='wx'}}">
+        <live-pusher wx:if="{{pusher.url}}" class="pusher" url="{{pusher.url}}" mode="RTC" autopush enable-camera="{{false}}" enable-mic="{{true}}"></live-pusher>
+        <live-player wx:for="{{playerList}}" wx:key="userId" class="canvas" src="{{item.url}}" mode="RTC" autoplay></live-player>
+      </block>
+      <!-- 演示 / 未接入 SDK：占位视觉 -->
+      <view class="demostage" wx:if="{{playing&&rtcMode!=='wx'}}">
+        <image class="demo-dog" src="{{ic.dog}}" mode="aspectFit" style="{{videoStyle}}" />
+        <view class="demo-tip"><text>模拟画面 · {{shopName}}</text><text>{{dur}}</text></view>
+      </view>
+
+      <!-- 封面态 -->
+      <view class="poster {{poster.kind}}" wx:if="{{!playing}}">
+        <image class="paws" src="{{ic.paws}}" mode="scaleToFill" />
+        <view class="spin" wx:if="{{poster.spinning}}"></view>
+        <view class="ring" wx:else><image class="i-lg" src="{{poster.icon}}" mode="aspectFit" /></view>
+        <text class="poster-text">{{poster.text}}</text>
+        <text class="poster-hint" wx:if="{{poster.hint}}">{{poster.hint}}</text>
+        <button class="live-btn" wx:if="{{poster.showBtn}}" disabled="{{poster.btnDisabled}}" bindtap="onPosterBtn">
+          <image class="i-sm" src="{{poster.btnIcon}}" mode="aspectFit" />
+          <text>{{poster.btn}}</text>
+        </button>
+      </view>
+
+      <!-- 播放中 HUD -->
+      <view class="hud" wx:if="{{playing}}">
+        <view class="badge">
+          <view class="badge-b"><view class="live-dot"></view><text>LIVE</text></view>
+          <view class="badge-b"><text>{{dur}}</text></view>
+        </view>
+        <view class="badge-r">
+          <view class="badge-b" wx:if="{{viewersShow}}"><text>{{viewers}}</text></view>
+          <view class="badge-b" wx:if="{{wifiShow}}"><text>Wi-Fi {{wifi}}</text></view>
+        </view>
+        <view class="mood" wx:if="{{moodShow}}">
+          <image class="i-sm" src="{{mood.icon}}" mode="aspectFit" />
+          <text>{{mood.text}}</text>
+        </view>
+        <view class="bar">
+          <view class="g">
+            <button class="bar-btn" bindtap="toggleMute"><image class="i" src="{{clientMute?ic.barMute:ic.barVol}}" mode="aspectFit" /></button>
+            <view class="lvl" wx:if="{{micOn&&!clientMute}}">
+              <view class="lvl-b" wx:for="{{levels}}" wx:key="*this" style="height:{{item}}px"></view>
+            </view>
+            <text class="bar-note" wx:if="{{micShow&&!micOn}}">店内收音已关</text>
+          </view>
+          <view class="g">
+            <button class="bar-q" wx:if="{{qualityShow}}" bindtap="openQuality">{{qualityLabel}}</button>
+            <text class="bar-q static" wx:else>{{qualityRes}}</text>
+            <button class="bar-btn {{talking?'on':''}}" bindtap="toggleTalk"><image class="i" src="{{ic.barMic}}" mode="aspectFit" /></button>
+            <button class="bar-btn" bindtap="toggleFull"><image class="i" src="{{full?ic.barExit:ic.barFull}}" mode="aspectFit" /></button>
+            <button class="bar-btn" bindtap="stopLive"><image class="i" src="{{ic.barStop}}" mode="aspectFit" /></button>
+          </view>
+        </view>
+      </view>
+    </view>
+
+    <!-- 状态卡：AI 识别 + 活跃度环 + 环境瓦片 -->
+    <view class="card" wx:if="{{statusShow}}">
+      <view class="card-h"><text>{{petName}}的状态</text><text class="card-h-sub">设备实时识别</text></view>
+      <view class="status-row">
+        <block wx:if="{{cap.pet_activity}}">
+          <view class="act-ic" style="background:{{act.bg}};color:{{act.color}}"><image class="i-lg" src="{{act.icon}}" mode="aspectFit" /></view>
+          <view class="t"><text class="t-b">{{act.title}}</text><text class="t-s">{{act.sub}}</text></view>
+        </block>
+        <view class="t" wx:else><text class="t-b">活跃度</text></view>
+        <view class="ringbox" wx:if="{{cap.activity_level}}">
+          <image class="ring-img" src="{{ringUrl}}" mode="aspectFit" />
+          <text class="ring-v">{{levelText}}</text>
+          <text class="ring-s">活跃度</text>
+        </view>
+      </view>
+      <view class="tiles" wx:if="{{cap.env_temperature||cap.env_humidity}}">
+        <view class="tile" wx:if="{{cap.env_temperature}}" style="background:#fff3ec">
+          <view class="tile-h"><image class="i-xs" src="{{ic.temp}}" mode="aspectFit" /><text>舍内温度</text><text class="tile-em" style="color:{{env.temp.color}}">{{env.temp.tag}}</text></view>
+          <view class="tile-b">{{env.temp.value}}<text class="tile-i">℃</text></view>
+        </view>
+        <view class="tile" wx:if="{{cap.env_humidity}}" style="background:var(--sky)">
+          <view class="tile-h"><image class="i-xs" src="{{ic.drop}}" mode="aspectFit" /><text>舍内湿度</text></view>
+          <view class="tile-b">{{env.hum.value}}<text class="tile-i">%</text></view>
+        </view>
+      </view>
+    </view>
+
+    <!-- 快捷操作 -->
+    <view class="quick" wx:if="{{quick.length}}" style="grid-template-columns:repeat({{quick.length}},1fr)">
+      <view class="qbtn {{item.on?'on':''}} {{item.disabled?'off':''}}" wx:for="{{quick}}" wx:key="key" data-key="{{item.key}}" bindtap="onQuick">
+        <view class="qbtn-c" style="background:{{item.bg}};color:{{item.color}}"><image class="i" src="{{item.icon}}" mode="aspectFit" /></view>
+        <text class="qbtn-t">{{item.label}}</text>
+        <text class="qbtn-s" wx:if="{{item.sub}}">{{item.sub}}</text>
+      </view>
+    </view>
+  </scroll-view>
+
+  <!-- ============ 动态 ============ -->
+  <scroll-view class="scroll" scroll-y wx:elif="{{tab==='feed'}}">
+    <view class="card" wx:if="{{cap.pet_activity}}">
+      <view class="card-h"><text>今日日报</text><text class="card-h-sub">平台根据设备识别汇总</text></view>
+      <view class="report">
+        <view class="report-cell" wx:for="{{report}}" wx:key="k"><text class="report-b">{{item.v}}</text><text class="report-s">{{item.k}}</text></view>
+      </view>
+    </view>
+    <view class="card note-card" wx:if="{{notes.length}}">
+      <view class="card-h"><text>店员留言</text></view>
+      <view wx:for="{{notes}}" wx:key="id">
+        <text class="note-p">{{item.content}}</text>
+        <text class="note-s">{{item.staffName}} · {{item.time}}</text>
+      </view>
+    </view>
+    <view class="card">
+      <view class="card-h"><text>今日动态</text><text class="card-h-sub">{{petName}}的一天</text></view>
+      <view class="tl">
+        <view class="tl-i" wx:for="{{timeline}}" wx:key="id" style="--c:{{item.color}}">
+          <text class="tl-t">{{item.time}}</text>
+          <text class="tl-x">{{item.text}}</text>
+        </view>
+      </view>
+    </view>
+  </scroll-view>
+
+  <!-- ============ 相册 ============ -->
+  <scroll-view class="scroll" scroll-y wx:elif="{{tab==='album'}}">
+    <block wx:if="{{photos.length}}">
+      <view class="label">{{petName}}的精彩瞬间 · {{photos.length}} 张</view>
+      <view class="grid">
+        <view class="photo" wx:for="{{photos}}" wx:key="id" data-index="{{index}}" bindtap="openPhoto">
+          <image class="photo-img" src="{{item.src}}" mode="aspectFill" />
+          <text class="photo-time">{{item.time}}</text>
+        </view>
+      </view>
+    </block>
+    <view class="empty" wx:else>
+      <image class="empty-dog" src="{{ic.dog}}" mode="aspectFit" />
+      <text>还没有照片</text>
+      <text>观看实时流时点“抓拍”，留住{{petName}}的可爱瞬间</text>
+    </view>
+  </scroll-view>
+
+  <!-- ============ 更多 ============ -->
+  <scroll-view class="scroll" scroll-y wx:elif="{{tab==='more'}}">
+    <block wx:if="{{more.watch.show}}">
+      <view class="label">观看设置</view>
+      <view class="group">
+        <button class="item" wx:if="{{more.watch.quality.show}}" disabled="{{!online}}" bindtap="openQuality">
+          <text>画质</text>
+          <view class="v"><text class="v-text {{online?'':'muted'}}">{{more.watch.quality.label}}</text><image class="i-sm" src="{{ic.chev}}" mode="aspectFit" /></view>
+        </button>
+        <view class="item" wx:if="{{more.watch.mic.show}}">
+          <view class="item-l"><text>店内收音</text><text class="item-sub">{{more.watch.mic.on?'观看时可听到店里的声音':'已关闭，仅有画面'}}</text></view>
+          <view class="sw {{more.watch.mic.on?'on':''}} {{more.watch.mic.pending?'pend':''}} {{online?'':'off'}}" bindtap="toggleMic"></view>
+        </view>
+        <view class="item" wx:if="{{more.watch.volume.show}}">
+          <view class="item-l"><text>对讲音量</text><text class="item-sub">店里扬声器播放你的声音</text></view>
+          <view class="step">
+            <button class="step-btn" disabled="{{!online||!more.watch.volume.canDec||more.watch.volume.pending}}" bindtap="decVolume"><image class="i-sm" src="{{ic.minus}}" mode="aspectFit" /></button>
+            <text class="step-b">{{more.watch.volume.text}}</text>
+            <button class="step-btn" disabled="{{!online||!more.watch.volume.canInc||more.watch.volume.pending}}" bindtap="incVolume"><image class="i-sm" src="{{ic.plus}}" mode="aspectFit" /></button>
+          </view>
+        </view>
+      </view>
+    </block>
+
+    <block wx:if="{{more.picture.show}}">
+      <view class="label">画面设置</view>
+      <view class="group">
+        <button class="item" wx:if="{{more.picture.night.show}}" disabled="{{!online}}" bindtap="openNight">
+          <text>夜视模式</text>
+          <view class="v"><text class="v-text {{online?'':'muted'}}">{{more.picture.night.label}}</text><image class="i-sm" src="{{ic.chev}}" mode="aspectFit" /></view>
+        </button>
+        <view class="item" wx:if="{{more.picture.flip.show}}">
+          <view class="item-l"><text>画面翻转 180°</text></view>
+          <view class="sw {{more.picture.flip.on?'on':''}} {{more.picture.flip.pending?'pend':''}} {{online?'':'off'}}" bindtap="toggleFlip"></view>
+        </view>
+      </view>
+    </block>
+
+    <block wx:if="{{more.device.show}}">
+      <view class="label">设备状态</view>
+      <view class="group">
+        <view class="item" wx:for="{{more.device.items}}" wx:key="k">
+          <text>{{item.k}}</text>
+          <text class="v-text muted">{{item.v}}</text>
+        </view>
+      </view>
+    </block>
+
+    <view class="sub-tip" wx:if="{{!more.watch.show&&!more.picture.show&&!more.device.show}}">当前设备未上报可配置项</view>
+  </scroll-view>
+
+  <!-- 底部导航 -->
+  <view class="tabs">
+    <button class="tabs-btn {{tab===item.key?'on':''}}" wx:for="{{tabs}}" wx:key="key" data-key="{{item.key}}" bindtap="go">
+      <view class="ic"><image class="i" src="{{tab===item.key?item.iconOn:item.icon}}" mode="aspectFit" /></view>
+      <text>{{item.label}}</text>
+      <text class="num" wx:if="{{item.badge}}">{{item.badge>99?'99+':item.badge}}</text>
+    </button>
+  </view>
+
+  <!-- 浮层 -->
+  <view class="mask {{sheet.visible?'show':''}}" bindtap="closeSheet"></view>
+  <view class="sheet {{sheet.visible?'show':''}}">
+    <button class="sheet-x" bindtap="closeSheet"><image class="i" src="{{ic.close}}" mode="aspectFit" /></button>
+    <text class="sheet-h2">{{sheet.title}}</text>
+    <view class="opt {{sheet.active===item.value?'on':''}}" wx:for="{{sheet.options}}" wx:key="value" data-value="{{item.value}}" bindtap="pickOption">
+      <view class="opt-l"><text>{{item.label}}</text><text class="opt-sub" wx:if="{{item.sub}}">{{item.sub}}</text></view>
+      <text class="opt-tick" wx:if="{{sheet.active===item.value}}">✓</text>
+    </view>
+    <button class="ok-btn" disabled="{{!sheet.canConfirm}}" bindtap="confirmOption">确定</button>
+  </view>
+
+  <!-- 相册大图 -->
+  <view class="photo-viewer" wx:if="{{photoViewer}}" bindtap="closePhoto">
+    <text class="pv-h2">{{petName}} · {{photoViewer.time}}</text>
+    <image class="pv-img" src="{{photoViewer.src}}" mode="aspectFit" />
+  </view>
+
+  <!-- 轻提示 -->
+  <view class="toast {{toastShow?'show':''}}">{{toastText}}</view>
+</view>

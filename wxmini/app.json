@@ -1,0 +1,14 @@
+{
+  "pages": [
+    "pages/pet/index"
+  ],
+  "window": {
+    "navigationStyle": "custom",
+    "backgroundColor": "#fdeee2",
+    "backgroundTextStyle": "dark",
+    "enablePullDownRefresh": false
+  },
+  "style": "v2",
+  "sitemapLocation": "sitemap.json",
+  "lazyCodeLoading": "requiredComponents"
+}

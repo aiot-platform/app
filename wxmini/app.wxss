@@ -1,0 +1,52 @@
+/* 全局设计变量与基础样式，取值对齐原型 pet-prd/音视频交互原型.html :root */
+page {
+  --primary: #ff8a4c;
+  --primary-2: #ffab7a;
+  --primary-deep: #f0691f;
+  --primary-soft: #fff0e6;
+  --ink: #3a2f2a;
+  --sub: #a39690;
+  --surface: #fff;
+  --line: #f6ece6;
+  --danger: #f15f5f;
+  --warning: #ff9a4d;
+  --success: #36c58f;
+  --info: #4f9bff;
+  --mint: #e5f7ef;
+  --sky: #e7f1ff;
+  --sun: #fff4d6;
+  --page-gradient: linear-gradient(160deg, #fff9f4 0%, #fdeee2 100%);
+  --shadow: 0 8px 22px rgba(200, 120, 60, 0.09);
+
+  height: 100%;
+  background: var(--page-gradient);
+  color: var(--ink);
+  font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", sans-serif;
+  font-size: 28rpx;
+}
+
+view, scroll-view, text, image, button {
+  box-sizing: border-box;
+}
+
+button {
+  margin: 0;
+  padding: 0;
+  line-height: normal;
+  background: none;
+  border-radius: 0;
+  font: inherit;
+  color: inherit;
+}
+
+button::after {
+  border: 0;
+}
+
+button[disabled] {
+  opacity: 0.45;
+}
+
+image {
+  display: block;
+}
