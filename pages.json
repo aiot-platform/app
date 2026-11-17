@@ -1,5 +1,15 @@
 {
 	"pages": [
+		// #ifdef H5
+		// H5 落地页直接进宠物看护面板，方便在浏览器里预览；App / 小程序仍保持登录页优先。
+		{
+			"path": "pages/pet/index",
+			"style": {
+				"navigationBarTitleText": "宠物看护",
+				"navigationBarBackgroundColor": "#F4F6F8"
+			}
+		},
+		// #endif
 		{
 			"path": "pages/login/index",
 			"style": {
@@ -220,6 +230,9 @@
 		},
         { "path": "pages/dashboard/search", "style": { "navigationBarTitleText": "搜索看板", "navigationBarBackgroundColor": "#FFFFFF" } }
         ,{ "path": "pages/account/home-preference", "style": { "navigationBarTitleText": "App 首页", "navigationBarBackgroundColor": "#F2F2F7" } }
+        // #ifndef H5
+        ,{ "path": "pages/pet/index", "style": { "navigationBarTitleText": "宠物看护", "navigationBarBackgroundColor": "#F4F6F8" } }
+        // #endif
 	],
 	// #ifdef MP-WEIXIN
     "subPackages": [
