@@ -1,0 +1,27 @@
+<view class="cend-page">
+  <view class="cend-head">
+    <view>
+      <view class="cend-title">我的宠物</view>
+      <view class="cend-subtitle">选择一只宠物进入实时看护面板</view>
+    </view>
+    <view class="cend-head-action" bindtap="goBind">扫码绑定</view>
+  </view>
+
+  <view wx:if="{{loading}}" class="cend-state">加载中…</view>
+  <view wx:elif="{{error}}" class="cend-state" bindtap="loadPets">{{error}}</view>
+  <view wx:elif="{{!pets.length}}" class="cend-state">还没有绑定宠物，<text class="cend-link" bindtap="goBind">去绑定</text></view>
+  <view wx:else class="cend-list">
+    <view wx:for="{{pets}}" wx:key="deviceId" class="cend-card" bindtap="openPet" data-index="{{index}}">
+      <image class="cend-avatar" src="{{item.avatar}}" mode="aspectFill" />
+      <view class="cend-card-body">
+        <text class="cend-card-name">{{item.title}}</text>
+        <text class="cend-card-meta">{{item.breed}}</text>
+        <text wx:if="{{item.shopName}}" class="cend-card-shop">{{item.shopName}}</text>
+        <text wx:if="{{item.boardingDays}}" class="cend-card-tag">寄养第 {{item.boardingDays}} 天</text>
+      </view>
+      <text class="cend-card-arrow">›</text>
+    </view>
+  </view>
+
+  <text class="cend-logout" bindtap="logout">退出登录</text>
+</view>

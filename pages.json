@@ -35,6 +35,38 @@
 				"navigationStyle": "custom"
 			}
 		},
+		// C 端（宠物家长）：登录 / 注册 / 宠物列表 / 扫码绑定
+		{
+			"path": "pages/c/login/index",
+			"style": {
+				"navigationBarTitleText": "登录",
+				"enablePullDownRefresh": false,
+				"navigationStyle": "custom"
+			}
+		},
+		{
+			"path": "pages/c/register/index",
+			"style": {
+				"navigationBarTitleText": "注册",
+				"enablePullDownRefresh": false,
+				"navigationStyle": "custom"
+			}
+		},
+		{
+			"path": "pages/c/pets/index",
+			"style": {
+				"navigationBarTitleText": "我的宠物",
+				"enablePullDownRefresh": true,
+				"navigationBarBackgroundColor": "#F4F6F8"
+			}
+		},
+		{
+			"path": "pages/c/bind/index",
+			"style": {
+				"navigationBarTitleText": "绑定宠物设备",
+				"navigationBarBackgroundColor": "#F7F8FC"
+			}
+		},
 		// #ifndef MP-WEIXIN
 {
 			"path": "pages/alarms/index",

@@ -1,0 +1,29 @@
+<view class="cend-page">
+  <view class="cend-title">注册家长账号</view>
+  <view class="cend-subtitle">注册后请让门店生成绑定码，扫码即可绑定宠物设备。</view>
+
+  <view class="cend-field">
+    <text class="cend-label">手机号</text>
+    <input class="cend-input" type="number" maxlength="11" placeholder="请输入手机号" placeholder-class="cend-ph"
+      value="{{phone}}" bindinput="onPhone" disabled="{{loading}}" />
+  </view>
+  <view class="cend-field">
+    <text class="cend-label">密码</text>
+    <input class="cend-input" password placeholder="至少 6 位，建议字母加数字" placeholder-class="cend-ph"
+      value="{{password}}" bindinput="onPassword" disabled="{{loading}}" />
+  </view>
+  <view class="cend-field">
+    <text class="cend-label">确认密码</text>
+    <input class="cend-input" password placeholder="请再次输入密码" placeholder-class="cend-ph"
+      value="{{confirmPassword}}" bindinput="onConfirm" disabled="{{loading}}" />
+  </view>
+  <view class="cend-field">
+    <text class="cend-label">昵称</text>
+    <input class="cend-input" type="text" maxlength="30" placeholder="选填，方便店员称呼" placeholder-class="cend-ph"
+      value="{{nickname}}" bindinput="onNickname" disabled="{{loading}}" />
+  </view>
+
+  <button class="cend-btn primary" loading="{{loading}}" disabled="{{loading}}" bindtap="submit">注册并登录</button>
+
+  <view class="cend-foot">已有账号？<text class="cend-link" bindtap="goLogin">去登录</text></view>
+</view>

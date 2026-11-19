@@ -1,5 +1,9 @@
 {
   "pages": [
+    "pages/c/pets/index",
+    "pages/c/login/index",
+    "pages/c/register/index",
+    "pages/c/bind/index",
     "pages/pet/index"
   ],
   "window": {

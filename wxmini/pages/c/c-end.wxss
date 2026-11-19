@@ -1,0 +1,29 @@
+/* C 端（宠物家长）页面共用样式，各页通过 @import 引入 */
+.cend-page { min-height: 100vh; padding: 40rpx 40rpx 80rpx; }
+.cend-title { font-size: 46rpx; font-weight: 700; color: var(--ink); }
+.cend-subtitle { margin-top: 16rpx; font-size: 26rpx; color: var(--sub); line-height: 1.6; }
+.cend-field { margin-top: 32rpx; }
+.cend-label { display: block; margin-bottom: 12rpx; font-size: 24rpx; color: var(--sub); }
+.cend-input { width: 100%; height: 92rpx; padding: 0 28rpx; border-radius: 18rpx; background: #fff; box-shadow: var(--shadow); font-size: 30rpx; color: var(--ink); }
+.cend-ph { color: #c9bab0; }
+.cend-btn { width: 100%; height: 92rpx; line-height: 92rpx; margin-top: 44rpx; border-radius: 18rpx; text-align: center; font-size: 30rpx; background: #fff; color: var(--primary-deep); box-shadow: var(--shadow); }
+.cend-btn.primary { background: linear-gradient(135deg, var(--primary) 0%, var(--primary-deep) 100%); color: #fff; box-shadow: 0 12px 24px rgba(240, 105, 31, 0.22); }
+.cend-foot { display: flex; align-items: center; justify-content: center; gap: 12rpx; margin-top: 44rpx; font-size: 26rpx; color: var(--sub); }
+.cend-link { color: var(--primary-deep); font-weight: 600; }
+.cend-brand { display: flex; flex-direction: column; align-items: center; margin-top: 120rpx; }
+.cend-brand-name { font-size: 42rpx; font-weight: 700; color: var(--ink); }
+.cend-slogan { margin-top: 12rpx; font-size: 26rpx; color: var(--sub); }
+.cend-state { padding: 160rpx 0; text-align: center; font-size: 28rpx; color: var(--sub); }
+.cend-list { margin-top: 24rpx; }
+.cend-card { display: flex; align-items: center; padding: 28rpx; margin-bottom: 24rpx; border-radius: 24rpx; background: #fff; box-shadow: var(--shadow); }
+.cend-avatar { width: 108rpx; height: 108rpx; border-radius: 24rpx; background: #f3efec; }
+.cend-card-body { flex: 1; min-width: 0; margin-left: 24rpx; display: flex; flex-direction: column; }
+.cend-card-name { font-size: 32rpx; font-weight: 600; color: var(--ink); }
+.cend-card-meta { margin-top: 8rpx; font-size: 25rpx; color: var(--sub); }
+.cend-card-shop { margin-top: 8rpx; font-size: 24rpx; color: #8a7a72; }
+.cend-card-tag { align-self: flex-start; margin-top: 12rpx; padding: 4rpx 16rpx; border-radius: 20rpx; background: var(--primary-soft); color: var(--primary-deep); font-size: 22rpx; }
+.cend-card-arrow { margin-left: 12rpx; font-size: 44rpx; color: #d9cbc2; }
+.cend-head { display: flex; align-items: flex-start; justify-content: space-between; }
+.cend-head-action { padding: 12rpx 26rpx; border-radius: 32rpx; background: linear-gradient(135deg, var(--primary) 0%, var(--primary-deep) 100%); color: #fff; font-size: 26rpx; box-shadow: 0 8px 18px rgba(240, 105, 31, 0.2); }
+.cend-divider { margin: 48rpx 0 8rpx; text-align: center; font-size: 24rpx; color: var(--sub); }
+.cend-logout { display: block; margin: 56rpx auto 0; text-align: center; font-size: 26rpx; color: var(--sub); }

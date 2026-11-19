@@ -108,8 +108,9 @@ export default {
     }
     if (!this.deviceId) this.deviceId = this.demo ? 'demo-device' : ''
     if (!this.deviceId) {
+      // 已登录但未带 device_id：按 PRD 信息架构回到宠物列表，由列表带 device_id 进入面板。
       this.loading = false
-      this.loadError = this.$t('pages.pet.missingDevice')
+      uni.reLaunch({ url: '/pages/c/pets/index' })
       return
     }
     this.boot()

@@ -111,7 +111,15 @@ Page({
     if (options.server) wx.setStorageSync('serverAddress', String(options.server))
     // 演示模式：显式 ?demo=1，或未登录时自动启用（等价 H5 预览）。
     this.demo = String(options.demo || '') === '1' || !wx.getStorageSync('access_token')
-    if (!this.deviceId) this.deviceId = 'demo-device'
+    if (!this.deviceId) {
+      if (this.demo) {
+        this.deviceId = 'demo-device'
+      } else {
+        // 已登录但未带 device_id：回到宠物列表，由列表带 device_id 进入面板。
+        wx.reLaunch({ url: '/pages/c/pets/index' })
+        return
+      }
+    }
 
     this.values = {}
     this.fields = []
@@ -653,7 +661,7 @@ Page({
       // 相册存储是平台能力（接口待定）：先用本地记录保证角标与网格闭环。
       await appendAlbumPhoto({ src: ICON.dog })
       this.ui.newPhotos = bumpAlbumBadge()
-      this.platform.album = await loadAlbum()
+      this.platform.album = await loadAlbum(this.deviceId)
       this.toast('已抓拍，保存到相册')
     } catch (error) {
       this.toast('抓拍失败，请稍后重试')
@@ -675,7 +683,7 @@ Page({
       else {
         const petName = this.petName()
         await appendTimeline({ type: 'treat', text: '你给' + petName + '投喂了一份零食' })
-        this.platform.timeline = await loadTimeline()
+        this.platform.timeline = await loadTimeline(this.deviceId)
         this.ui.forceAct = 4
         if (this.forceActTimer) clearTimeout(this.forceActTimer)
         this.forceActTimer = setTimeout(() => { this.ui.forceAct = null; this.refresh() }, 4000)

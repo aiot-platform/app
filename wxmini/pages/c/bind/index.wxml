@@ -1,0 +1,18 @@
+<view class="cend-page">
+  <view class="cend-title">绑定宠物设备</view>
+  <view class="cend-subtitle">扫描门店出示的绑定码，或手动输入绑定码完成绑定。</view>
+
+  <button class="cend-btn primary" disabled="{{loading}}" bindtap="scan">扫码绑定</button>
+
+  <view class="cend-divider">或手动输入绑定码</view>
+
+  <view class="cend-field">
+    <text class="cend-label">绑定码</text>
+    <input class="cend-input" type="text" placeholder="请输入门店提供的绑定码" placeholder-class="cend-ph"
+      value="{{code}}" bindinput="onCode" bindconfirm="submit" disabled="{{loading}}" />
+  </view>
+
+  <button class="cend-btn" loading="{{loading}}" disabled="{{loading}}" bindtap="submit">确认绑定</button>
+
+  <text class="cend-logout" bindtap="goBack">返回宠物列表</text>
+</view>
