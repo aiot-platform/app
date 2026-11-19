@@ -1,0 +1,439 @@
+{
+  "profile": {
+    "productKey": "a1AvPanel001",
+    "productName": "宠物店音视频看护设备",
+    "tslVersion": "1.1.0",
+    "modelVersion": "1.1.0",
+    "category": "pet-camera"
+  },
+  "properties": [
+    {
+      "id": 1,
+      "code": "av_status",
+      "name": "音视频状态",
+      "accessMode": "r",
+      "required": true,
+      "dataType": "enum",
+      "specs": {
+        "0": "空闲",
+        "1": "推流中",
+        "2": "对讲中",
+        "3": "异常"
+      },
+      "description": "设备侧音视频链路状态，只读。推流中表示设备正在向观看端推送音视频流。",
+      "sort": 1
+    },
+    {
+      "id": 2,
+      "code": "video_quality",
+      "name": "画质",
+      "accessMode": "rw",
+      "required": false,
+      "dataType": "enum",
+      "specs": {
+        "1": "流畅",
+        "2": "标清",
+        "3": "高清",
+        "4": "超清"
+      },
+      "description": "实时流的编码画质档位。切换后设备重新协商码流。",
+      "sort": 2
+    },
+    {
+      "id": 3,
+      "code": "mic_switch",
+      "name": "设备拾音开关",
+      "accessMode": "rw",
+      "required": false,
+      "dataType": "bool",
+      "specs": {
+        "0": "关闭",
+        "1": "开启"
+      },
+      "description": "控制设备麦克风是否采集并上传声音。关闭后观看端只有画面，无设备侧声音。",
+      "sort": 3
+    },
+    {
+      "id": 4,
+      "code": "speaker_volume",
+      "name": "设备扬声器音量",
+      "accessMode": "rw",
+      "required": false,
+      "dataType": "int",
+      "specs": {
+        "min": 0,
+        "max": 100,
+        "step": 10,
+        "unit": "%"
+      },
+      "description": "设备侧扬声器音量，用于对讲时播放观看端声音。",
+      "sort": 4
+    },
+    {
+      "id": 5,
+      "code": "night_vision",
+      "name": "夜视模式",
+      "accessMode": "rw",
+      "required": false,
+      "dataType": "enum",
+      "specs": {
+        "0": "自动",
+        "1": "始终开启",
+        "2": "始终关闭"
+      },
+      "description": "红外夜视策略。",
+      "sort": 5
+    },
+    {
+      "id": 6,
+      "code": "image_flip",
+      "name": "画面翻转",
+      "accessMode": "rw",
+      "required": false,
+      "dataType": "enum",
+      "specs": {
+        "0": "正常",
+        "1": "旋转180度"
+      },
+      "description": "设备倒装时用于校正画面方向。",
+      "sort": 6
+    },
+    {
+      "id": 7,
+      "code": "viewer_count",
+      "name": "当前观看人数",
+      "accessMode": "r",
+      "required": false,
+      "dataType": "int",
+      "specs": {
+        "min": 0,
+        "max": 4,
+        "step": 1,
+        "unit": "人"
+      },
+      "description": "当前正在观看实时流的终端数，只读。",
+      "sort": 7
+    },
+    {
+      "id": 8,
+      "code": "wifi_rssi",
+      "name": "Wi-Fi 信号强度",
+      "accessMode": "r",
+      "required": false,
+      "dataType": "int",
+      "specs": {
+        "min": -100,
+        "max": 0,
+        "step": 1,
+        "unit": "dBm"
+      },
+      "description": "设备侧 Wi-Fi 信号强度，只读，用于判断画面卡顿原因。",
+      "sort": 8
+    },
+    {
+      "id": 9,
+      "code": "sd_status",
+      "name": "存储卡状态",
+      "accessMode": "r",
+      "required": false,
+      "dataType": "enum",
+      "specs": {
+        "0": "未插卡",
+        "1": "正常",
+        "2": "异常",
+        "3": "格式化中"
+      },
+      "description": "设备本地存储卡状态，只读。",
+      "sort": 9
+    },
+    {
+      "id": 10,
+      "code": "pet_activity",
+      "name": "宠物状态",
+      "accessMode": "r",
+      "required": false,
+      "dataType": "enum",
+      "specs": {
+        "0": "未检测到宠物",
+        "1": "休息",
+        "2": "睡觉",
+        "3": "玩耍",
+        "4": "进食",
+        "5": "饮水"
+      },
+      "description": "设备端 AI 识别的宠物当前行为，只读。",
+      "sort": 10
+    },
+    {
+      "id": 11,
+      "code": "activity_level",
+      "name": "活跃度",
+      "accessMode": "r",
+      "required": false,
+      "dataType": "int",
+      "specs": {
+        "min": 0,
+        "max": 100,
+        "step": 1,
+        "unit": "%"
+      },
+      "description": "最近 10 分钟的活动量折算，只读。0 为有效值，表示几乎无活动。",
+      "sort": 11
+    },
+    {
+      "id": 12,
+      "code": "env_temperature",
+      "name": "舍内温度",
+      "accessMode": "r",
+      "required": false,
+      "dataType": "float",
+      "specs": {
+        "min": -20,
+        "max": 60,
+        "step": 0.1,
+        "unit": "℃"
+      },
+      "description": "宠物活动区域温度，只读。",
+      "sort": 12
+    },
+    {
+      "id": 13,
+      "code": "env_humidity",
+      "name": "舍内湿度",
+      "accessMode": "r",
+      "required": false,
+      "dataType": "int",
+      "specs": {
+        "min": 0,
+        "max": 100,
+        "step": 1,
+        "unit": "%"
+      },
+      "description": "宠物活动区域相对湿度，只读。",
+      "sort": 13
+    },
+    {
+      "id": 14,
+      "code": "treat_left",
+      "name": "今日剩余零食次数",
+      "accessMode": "r",
+      "required": false,
+      "dataType": "int",
+      "specs": {
+        "min": 0,
+        "max": 10,
+        "step": 1,
+        "unit": "次"
+      },
+      "description": "设备投喂器今日还可投喂的次数，只读，由店铺设定上限。",
+      "sort": 14
+    }
+  ],
+  "events": [
+    {
+      "id": 15,
+      "code": "stream_error",
+      "name": "推流异常",
+      "type": "alert",
+      "subType": "ERROR",
+      "outputData": [
+        {
+          "code": "error_code",
+          "name": "错误类型",
+          "dataType": "enum",
+          "specs": {
+            "0": "编码器故障",
+            "1": "摄像头无信号",
+            "2": "网络拥塞"
+          },
+          "id": 16
+        }
+      ],
+      "description": "设备推流失败时上报。av_status 同步变为异常，恢复推流后事件解除。",
+      "sort": 15
+    },
+    {
+      "id": 17,
+      "code": "sd_card_error",
+      "name": "存储卡异常",
+      "type": "alert",
+      "subType": "WARN",
+      "outputData": [
+        {
+          "code": "sd_error_status",
+          "name": "存储卡状态",
+          "dataType": "enum",
+          "specs": {
+            "0": "未插卡",
+            "1": "正常",
+            "2": "异常",
+            "3": "格式化中"
+          },
+          "id": 18
+        }
+      ],
+      "description": "存储卡读写异常时上报，不影响实时流。",
+      "sort": 17
+    },
+    {
+      "id": 19,
+      "code": "bark_alert",
+      "name": "吠叫提醒",
+      "type": "alert",
+      "subType": "INFO",
+      "outputData": [
+        {
+          "code": "volume_db",
+          "name": "声音强度",
+          "dataType": "int",
+          "specs": {
+            "min": 0,
+            "max": 120,
+            "step": 1,
+            "unit": "dB"
+          },
+          "id": 20
+        }
+      ],
+      "description": "设备识别到持续吠叫时上报，仅提醒，无需处置。",
+      "sort": 19
+    },
+    {
+      "id": 21,
+      "code": "env_abnormal",
+      "name": "舍内环境异常",
+      "type": "alert",
+      "subType": "WARN",
+      "outputData": [
+        {
+          "code": "abnormal_type",
+          "name": "异常类型",
+          "dataType": "enum",
+          "specs": {
+            "0": "温度过高",
+            "1": "温度过低",
+            "2": "湿度异常"
+          },
+          "id": 22
+        },
+        {
+          "code": "value",
+          "name": "当前值",
+          "dataType": "float",
+          "specs": {
+            "min": -20,
+            "max": 100,
+            "step": 0.1
+          },
+          "id": 23
+        }
+      ],
+      "description": "舍内温湿度超出舒适范围时上报，指标回到范围内后解除。",
+      "sort": 21
+    }
+  ],
+  "services": [
+    {
+      "id": 24,
+      "code": "start_live",
+      "name": "开启实时流",
+      "callType": "async",
+      "inputData": [
+        {
+          "code": "quality",
+          "name": "请求画质",
+          "dataType": "enum",
+          "specs": {
+            "1": "流畅",
+            "2": "标清",
+            "3": "高清",
+            "4": "超清"
+          },
+          "id": 26
+        }
+      ],
+      "outputData": [
+        {
+          "code": "start_live_result",
+          "name": "执行结果",
+          "dataType": "enum",
+          "specs": {
+            "0": "已开始推流",
+            "1": "设备忙",
+            "2": "观看人数已满",
+            "3": "摄像头无信号"
+          },
+          "id": 25
+        }
+      ],
+      "description": "观看端点击实时流时调用。设备开始推送音视频流，av_status 变为推流中。",
+      "sort": 24
+    },
+    {
+      "id": 27,
+      "code": "stop_live",
+      "name": "停止实时流",
+      "callType": "async",
+      "inputData": [],
+      "outputData": [
+        {
+          "code": "stop_live_result",
+          "name": "执行结果",
+          "dataType": "enum",
+          "specs": {
+            "0": "已停止",
+            "1": "当前未推流"
+          },
+          "id": 28
+        }
+      ],
+      "description": "最后一个观看端退出时停止推流，av_status 回到空闲。",
+      "sort": 27
+    },
+    {
+      "id": 29,
+      "code": "snapshot",
+      "name": "抓拍",
+      "callType": "async",
+      "inputData": [],
+      "outputData": [
+        {
+          "code": "snapshot_result",
+          "name": "执行结果",
+          "dataType": "enum",
+          "specs": {
+            "0": "抓拍成功",
+            "1": "未在推流",
+            "2": "存储失败"
+          },
+          "id": 30
+        }
+      ],
+      "description": "在推流中截取当前一帧并保存。",
+      "sort": 29
+    },
+    {
+      "id": 31,
+      "code": "dispense_treat",
+      "name": "投喂零食",
+      "callType": "async",
+      "inputData": [],
+      "outputData": [
+        {
+          "code": "dispense_treat_result",
+          "name": "执行结果",
+          "dataType": "enum",
+          "specs": {
+            "0": "已投喂",
+            "1": "今日次数已用完",
+            "2": "设备忙",
+            "3": "余粮不足"
+          },
+          "id": 32
+        }
+      ],
+      "description": "观看端点击后，设备投放一份零食。受 treat_left 限制。",
+      "sort": 31
+    }
+  ]
+}

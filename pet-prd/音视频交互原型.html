@@ -1,0 +1,719 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>宠物看护控制面板</title>
+<style>
+:root{
+  --primary:#ff8a4c;--primary-2:#ffab7a;--primary-deep:#f0691f;--primary-soft:#fff0e6;
+  --ink:#3a2f2a;--sub:#a39690;--surface:#fff;--line:#f6ece6;
+  --danger:#f15f5f;--warning:#ff9a4d;--success:#36c58f;--info:#4f9bff;
+  --mint:#e5f7ef;--sky:#e7f1ff;--sun:#fff4d6;
+  --page-gradient:linear-gradient(160deg,#fff9f4 0%,#fdeee2 100%);
+  --shadow:0 8px 22px rgba(200,120,60,.09);
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;height:100%}
+body{font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei",sans-serif;color:var(--ink);background:#e9e1db;display:flex;justify-content:center;align-items:center;gap:20px;padding:12px;overflow:hidden}
+button{font:inherit;color:inherit;border:0;background:none;cursor:pointer;padding:0}
+button:disabled{cursor:not-allowed}
+svg.i{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;flex:none}
+.hide{display:none!important}
+
+/* ===== 评审面板：不属于正式 App ===== */
+.demo{width:200px;max-height:calc(100vh - 24px);overflow:auto;background:#fff;border-radius:15px;padding:12px;font-size:12px;flex:none}
+.demo h3{margin:0 0 2px;font-size:14px}.demo .note{color:var(--danger);font-size:11px;margin-bottom:8px}
+.demo h4{margin:10px 0 5px;font-size:11px;color:var(--sub);font-weight:600}
+.demo .row{display:flex;flex-wrap:wrap;gap:5px}
+.demo .row button{padding:5px 8px;border-radius:8px;background:#f6f1ee;font-size:12px}
+.demo .row button.on{background:var(--primary-soft);color:var(--primary-deep);font-weight:600}
+.demo .reset{margin-top:12px;width:100%;padding:8px;border-radius:10px;background:var(--ink);color:#fff}
+.spec{width:310px;max-height:calc(100vh - 24px);overflow:auto;background:rgba(255,255,255,.72);border-radius:20px;padding:16px;font-size:12px;line-height:1.7;flex:none}
+.spec h3{margin:0 0 6px;font-size:15px}.spec table{width:100%;border-collapse:collapse;margin:6px 0}
+.spec td,.spec th{border-bottom:1px solid #eadfd8;padding:3px 4px;text-align:left}
+.spec code{background:#f3ebe6;padding:0 3px;border-radius:4px}
+
+/* ===== 手机画布 ===== */
+.phone{position:relative;width:390px;height:844px;border:9px solid #2b2420;border-radius:42px;overflow:hidden;background:var(--page-gradient);flex:none;box-shadow:0 20px 50px rgba(80,50,30,.25)}
+.screen{position:absolute;inset:0;display:flex;flex-direction:column}
+.status{height:43px;padding:0 22px;padding-top:env(safe-area-inset-top);display:flex;justify-content:space-between;align-items:center;font-size:13px;font-weight:600;flex:none;background:#fff9f4;z-index:5}
+.nav{height:48px;padding:0 15px;display:flex;align-items:center;justify-content:space-between;flex:none;position:relative;background:#fff9f4;z-index:5}
+.nav .title{position:absolute;left:0;right:0;text-align:center;font-weight:700;font-size:17px;pointer-events:none}
+.nav button{width:36px;height:36px;display:grid;place-items:center;border-radius:50%;position:relative;z-index:2}
+.scroll{flex:1;overflow:auto;padding:0 16px calc(84px + env(safe-area-inset-bottom));scrollbar-width:none}
+.scroll::-webkit-scrollbar{display:none}
+.tabs{position:absolute;left:0;right:0;bottom:0;height:calc(64px + env(safe-area-inset-bottom));padding-bottom:env(safe-area-inset-bottom);background:#fff;box-shadow:0 -4px 14px rgba(200,120,60,.08);display:flex;z-index:6}
+.tabs button{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;font-size:11px;color:var(--sub);position:relative}
+.tabs button .ic{width:34px;height:28px;border-radius:10px;display:grid;place-items:center}
+.tabs button.on{color:var(--primary-deep)}.tabs button.on .ic{background:var(--primary-soft)}
+.tabs .num{position:absolute;top:4px;left:calc(50% + 8px);min-width:16px;height:16px;border-radius:8px;background:var(--danger);color:#fff;font-size:10px;display:grid;place-items:center;padding:0 4px}
+
+/* 告警条 */
+.alert{margin:2px 0 8px;min-height:44px;border-radius:14px;background:#fff1f1;border:1px solid #ffd6d6;color:var(--danger);display:flex;align-items:center;gap:8px;padding:6px 12px;font-size:13px}
+.alert.warn{background:#fff6ec;border-color:#ffe0c2;color:#d9741f}
+.alert.info{background:#eef5ff;border-color:#d3e4ff;color:#2f72d6}
+.alert span{flex:1;line-height:1.35}
+.alert button{width:28px;height:28px;display:grid;place-items:center}
+
+/* 宠物头部 */
+.pet{display:flex;align-items:center;gap:12px;padding:6px 2px 14px}
+.avatar{width:58px;height:58px;border-radius:50%;background:linear-gradient(145deg,#ffe3c7,#ffc99a);display:grid;place-items:center;border:3px solid #fff;box-shadow:var(--shadow);flex:none}
+.pet h1{margin:0;font-size:24px;font-weight:600;display:flex;align-items:center;gap:8px}
+.pet .meta{font-size:12.5px;color:var(--sub);margin-top:3px}
+.pet .grow{flex:1;min-width:0}
+.live-chip{display:inline-flex;align-items:center;gap:5px;font-size:12px;padding:4px 10px;border-radius:14px;background:#fff;box-shadow:var(--shadow);white-space:nowrap}
+.dot{width:8px;height:8px;border-radius:50%;background:var(--sub);display:inline-block}
+.tag{font-size:11px;padding:2px 8px;border-radius:10px;background:var(--primary-soft);color:var(--primary-deep);font-weight:500}
+
+/* 播放器 */
+.player{position:relative;width:100%;aspect-ratio:16/10;border-radius:22px;overflow:hidden;background:#3a2f2a;box-shadow:0 10px 26px rgba(120,70,30,.22);border:3px solid #fff}
+.player canvas{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:none;transition:filter .3s}
+.player.playing canvas{display:block}
+.poster{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;color:#fff;font-size:13px;text-align:center;padding:16px;background:radial-gradient(circle at 50% 35%,#ffb98a,#f08a55 60%,#d96d3c)}
+.player.playing .poster{display:none}
+.poster .paws{position:absolute;inset:0;opacity:.12;pointer-events:none}
+.poster .ring{width:64px;height:64px;border-radius:50%;background:rgba(255,255,255,.22);display:grid;place-items:center;color:#fff}
+.poster .ring svg{width:30px;height:30px}
+.poster.offline{background:radial-gradient(circle at 50% 35%,#9a9390,#6f6966)}
+.poster.closed{background:radial-gradient(circle at 50% 35%,#7d86b8,#4d5585)}
+.poster.err{background:radial-gradient(circle at 50% 35%,#e57f7f,#a94646)}
+.spin{width:36px;height:36px;border-radius:50%;border:3px solid rgba(255,255,255,.3);border-top-color:#fff;animation:sp 1s linear infinite}
+@keyframes sp{to{transform:rotate(360deg)}}
+.live-btn{height:46px;padding:0 24px;border-radius:23px;background:#fff;color:var(--primary-deep);font-weight:700;font-size:15px;display:flex;align-items:center;gap:6px;box-shadow:0 6px 16px rgba(0,0,0,.15)}
+.live-btn:disabled{background:rgba(255,255,255,.45);color:rgba(255,255,255,.85);box-shadow:none}
+.hud{position:absolute;inset:0;display:none;pointer-events:none}
+.player.playing .hud{display:block}
+.hud>*{pointer-events:auto}
+.badge{position:absolute;top:10px;left:10px;display:flex;gap:6px;font-size:11px;color:#fff}
+.badge b,.badge-r b{background:rgba(40,25,15,.5);border-radius:10px;padding:3px 8px;font-weight:600;display:flex;align-items:center;gap:5px;backdrop-filter:blur(4px)}
+.badge i{width:7px;height:7px;border-radius:50%;background:#ff5a5a;animation:pulse 1.4s infinite}
+@keyframes pulse{50%{opacity:.25}}
+.badge-r{position:absolute;top:10px;right:10px;display:flex;gap:6px;font-size:11px;color:#fff}
+.badge-r b{font-weight:500}
+.mood{position:absolute;left:10px;bottom:54px;background:rgba(255,255,255,.92);color:var(--ink);border-radius:14px;padding:5px 11px;font-size:13px;font-weight:600;display:flex;align-items:center;gap:6px;box-shadow:0 4px 12px rgba(0,0,0,.15)}
+.bar{position:absolute;left:0;right:0;bottom:0;height:48px;background:linear-gradient(transparent,rgba(40,25,15,.7));display:flex;align-items:center;justify-content:space-between;padding:0 6px;color:#fff}
+.bar .g{display:flex;gap:0;align-items:center}
+.bar button{width:36px;height:36px;display:grid;place-items:center;border-radius:50%;color:#fff}
+.bar button.on{background:rgba(255,255,255,.28)}
+.bar .q{font-size:12px;border:1px solid rgba(255,255,255,.8);padding:2px 7px;width:auto;height:auto;border-radius:6px;margin:0 4px}
+.lvl{display:flex;gap:2px;align-items:flex-end;height:16px;margin-left:4px}
+.lvl s{width:3px;background:#ffd9b8;border-radius:2px;height:3px;display:block}
+.player.full{position:absolute;left:-9px;top:-9px;width:calc(100% + 18px);height:calc(100% + 18px);aspect-ratio:auto;border-radius:0;border:0;z-index:50}
+
+/* 卡片 */
+.card{background:var(--surface);border-radius:20px;padding:16px;margin-top:14px;box-shadow:var(--shadow)}
+.card h3{margin:0 0 10px;font-size:15px;display:flex;align-items:center;justify-content:space-between}
+.card h3 small{font-weight:400;color:var(--sub);font-size:11px}
+.status-row{display:flex;align-items:center;gap:14px}
+.act-ic{width:54px;height:54px;border-radius:18px;display:grid;place-items:center;flex:none}
+.act-ic svg{width:30px;height:30px}
+.status-row .t{flex:1;min-width:0}
+.status-row .t b{font-size:17px;display:block}
+.status-row .t span{font-size:12px;color:var(--sub)}
+.ringbox{position:relative;width:60px;height:60px;flex:none}
+.ringbox svg{width:60px;height:60px;transform:rotate(-90deg)}
+.ringbox div{position:absolute;inset:0;display:grid;place-items:center;font-size:14px;font-weight:700;font-variant-numeric:tabular-nums}
+.ringbox small{position:absolute;bottom:-14px;left:0;right:0;text-align:center;font-size:10px;color:var(--sub)}
+.tiles{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:14px}
+.tile{border-radius:16px;padding:12px 14px}
+.tile small{display:block;font-size:12px;color:var(--sub)}
+.tile b{font-size:24px;font-variant-numeric:tabular-nums;font-weight:600}
+.tile b i{font-style:normal;font-size:12px;font-weight:400;margin-left:2px;color:var(--sub)}
+.tile em{font-style:normal;font-size:11px;float:right;margin-top:4px}
+.quick{display:grid;gap:10px;margin-top:14px}
+.qbtn{background:#fff;border-radius:18px;padding:12px 4px 10px;display:flex;flex-direction:column;align-items:center;gap:6px;font-size:12.5px;box-shadow:var(--shadow);position:relative}
+.qbtn .c{width:42px;height:42px;border-radius:15px;display:grid;place-items:center}
+.qbtn:disabled{opacity:.45}
+.qbtn.on .c{background:var(--primary)!important;color:#fff!important}
+.qbtn small{font-size:10.5px;color:var(--sub);margin-top:-4px}
+
+/* 列表 / 控件 */
+.row2{display:flex;align-items:center;justify-content:space-between;min-height:34px}
+.row2 small{display:block;color:var(--sub);font-size:12px;margin-top:2px}
+.sw{width:50px;height:29px;border-radius:15px;background:#e4dcd7;position:relative;transition:.25s;flex:none}
+.sw::after{content:"";position:absolute;left:3px;top:3px;width:23px;height:23px;border-radius:50%;background:#fff;transition:.25s;box-shadow:0 1px 3px rgba(0,0,0,.2)}
+.sw.on{background:var(--primary)}.sw.on::after{left:24px}.sw.pend{opacity:.55}.sw:disabled{opacity:.45}
+.step{display:flex;align-items:center;gap:10px}
+.step button{width:42px;height:36px;border-radius:12px;background:#f6f1ee;display:grid;place-items:center}
+.step button:disabled{opacity:.4}
+.step b{min-width:52px;text-align:center;font-variant-numeric:tabular-nums;font-size:16px}
+.label{font-size:12px;color:var(--sub);margin:16px 4px 6px}
+.group{background:#fff;border-radius:18px;overflow:hidden;margin-bottom:6px;box-shadow:var(--shadow)}
+.item{display:flex;align-items:center;justify-content:space-between;min-height:56px;padding:0 16px;border-bottom:1px solid var(--line);width:100%;text-align:left}
+.item:last-child{border-bottom:0}
+.item .v{color:var(--sub);font-size:14px;display:flex;align-items:center;gap:4px}
+.item:disabled{opacity:.5}
+.sub-tip{font-size:11px;color:var(--sub);margin:2px 4px 8px}
+
+/* 动态页 */
+.report{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;text-align:center}
+.report div{background:var(--primary-soft);border-radius:14px;padding:10px 2px}
+.report b{display:block;font-size:18px;font-variant-numeric:tabular-nums}
+.report span{font-size:11px;color:var(--sub)}
+.note-card{background:linear-gradient(135deg,#fff6e0,#ffeacc)}
+.note-card p{margin:0;font-size:14px;line-height:1.6}
+.note-card small{display:block;margin-top:8px;color:#b18a5e;font-size:12px}
+.tl{position:relative;padding-left:22px}
+.tl::before{content:"";position:absolute;left:7px;top:6px;bottom:6px;width:2px;background:#f2e5dc}
+.tl-i{position:relative;padding:0 0 16px}
+.tl-i:last-child{padding-bottom:0}
+.tl-i::before{content:"";position:absolute;left:-20px;top:3px;width:12px;height:12px;border-radius:50%;background:var(--c,#ffab7a);border:3px solid #fff;box-shadow:0 0 0 1px #f2e5dc}
+.tl-i b{font-size:12px;color:var(--sub);font-weight:500;display:block}
+.tl-i span{font-size:14px}
+.empty{text-align:center;color:var(--sub);padding:46px 10px;font-size:13px;line-height:1.7}
+
+/* 相册 */
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:6px}
+.photo{position:relative;border-radius:16px;overflow:hidden;aspect-ratio:16/10;background:#eee;box-shadow:var(--shadow)}
+.photo img{width:100%;height:100%;object-fit:cover;display:block}
+.photo span{position:absolute;left:8px;bottom:6px;font-size:11px;color:#fff;text-shadow:0 1px 3px rgba(0,0,0,.6)}
+
+/* 浮层 */
+.mask{position:absolute;inset:0;background:rgba(40,25,15,.47);z-index:60;opacity:0;pointer-events:none;transition:opacity .25s}
+.mask.show{opacity:1;pointer-events:auto}
+.sheet{position:absolute;left:0;right:0;bottom:0;max-height:78%;background:#fff;border-radius:22px 22px 0 0;z-index:61;padding:18px 20px calc(26px + env(safe-area-inset-bottom));transform:translateY(105%);transition:transform .3s;overflow:auto}
+.sheet.show{transform:none}
+.sheet h2{margin:0 0 14px;text-align:center;font-size:17px}
+.sheet .x{position:absolute;right:12px;top:12px;width:36px;height:36px;display:grid;place-items:center}
+.sheet img{width:100%;border-radius:14px;display:block}
+.opt{display:flex;align-items:center;justify-content:space-between;min-height:52px;width:100%;padding:0 6px;border-bottom:1px solid var(--line);font-size:15px;text-align:left}
+.opt.on{color:var(--primary-deep);font-weight:600}
+.opt small{color:var(--sub);font-weight:400;margin-left:6px}
+.ok-btn{margin-top:16px;width:100%;height:48px;border-radius:24px;background:var(--primary);color:#fff;font-weight:600;font-size:16px}
+.ok-btn:disabled{background:#dccfc7}
+.toast{position:absolute;left:50%;top:22%;transform:translateX(-50%);max-width:76%;background:rgba(40,25,15,.82);color:#fff;padding:10px 16px;border-radius:14px;font-size:14px;z-index:90;opacity:0;pointer-events:none;transition:opacity .2s;text-align:center}
+.toast.show{opacity:1}
+
+@media(max-width:1180px){.spec{display:none}}
+@media(max-width:900px){.demo{display:none}}
+@media(max-height:880px) and (min-width:801px){.phone{transform:scale(.94)}}
+@media(max-height:810px) and (min-width:801px){.phone{transform:scale(.86)}}
+@media(max-width:800px){body{padding:0;display:block;overflow:hidden}.phone{width:100vw;height:100dvh;border:0;border-radius:0;box-shadow:none;transform:none}.player.full{left:0;top:0;width:100%;height:100%}}
+@media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+
+<!-- ===== 左侧演示场景：仅用于评审，不属于正式 App ===== -->
+<aside class="demo" id="demo"></aside>
+
+<div class="phone" id="phone">
+  <div class="screen">
+    <div class="status"><span id="clock">9:41</span><span>5G ▂▄▆ 🔋</span></div>
+    <div class="nav">
+      <button id="btnBack" aria-label="返回"><svg class="i" viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6"/></svg></button>
+      <div class="title" id="navTitle"></div>
+      <button id="btnSet" aria-label="设备设置"><svg class="i" viewBox="0 0 24 24"><circle cx="5" cy="12" r="1.2"/><circle cx="12" cy="12" r="1.2"/><circle cx="19" cy="12" r="1.2"/></svg></button>
+    </div>
+
+    <div class="scroll" id="pageHome">
+      <div id="alerts"></div>
+      <div class="pet" id="petHead"></div>
+      <div class="player" id="player">
+        <canvas id="cv" width="640" height="400"></canvas>
+        <div class="poster" id="poster"></div>
+        <div class="hud" id="hud"></div>
+      </div>
+      <div id="homeBody"></div>
+    </div>
+    <div class="scroll hide" id="pageFeed"></div>
+    <div class="scroll hide" id="pageAlbum"></div>
+    <div class="scroll hide" id="pageMore"></div>
+    <nav class="tabs" id="tabs" aria-label="底部导航"></nav>
+  </div>
+  <div class="mask" id="mask"></div>
+  <div class="sheet" id="sheet" role="dialog" aria-modal="true"></div>
+  <div class="toast" id="toast" role="status"></div>
+</div>
+
+<!-- ===== 右侧能力说明：来源于物模型，不属于正式 App ===== -->
+<aside class="spec" id="spec"></aside>
+
+<script>
+/* ============ 物模型事实（宠物店音视频设备物模型.json v1.1.0） ============ */
+const ALL_CODES=['av_status','video_quality','mic_switch','speaker_volume','night_vision','image_flip','viewer_count','wifi_rssi','sd_status','pet_activity','activity_level','env_temperature','env_humidity','treat_left'];
+const ALL_SERVICES=['start_live','stop_live','snapshot','dispense_treat'];
+const ENUMS={
+  av_status:{0:'空闲',1:'推流中',2:'对讲中',3:'异常'},
+  video_quality:{1:'流畅',2:'标清',3:'高清',4:'超清'},
+  night_vision:{0:'自动',1:'始终开启',2:'始终关闭'},
+  image_flip:{0:'正常',1:'旋转180度'},
+  sd_status:{0:'未插卡',1:'正常',2:'异常',3:'格式化中'},
+  pet_activity:{0:'未检测到宠物',1:'正在休息',2:'正在睡觉',3:'正在玩耍',4:'正在进食',5:'正在喝水'},
+  stream_error:{0:'编码器故障',1:'摄像头无信号',2:'网络拥塞'},
+  start_live_result:{0:'已开始推流',1:'设备忙',2:'观看人数已满',3:'摄像头无信号'}
+};
+const RES={1:[160,100,'360P'],2:[320,200,'480P'],3:[640,400,'720P'],4:[960,600,'1080P']};
+const SPEC={speaker_volume:{min:0,max:100,step:10,unit:'%'},viewer_count:{max:4},temp:{lo:18,hi:28}};
+/* 平台数据（非物模型）：宠物档案、店铺信息、日报、留言、时间线 */
+const PET={name:'奶糕',breed:'金毛',age:'2岁',day:3,shop:'暖暖宠物之家',hours:'08:00–21:00'};
+const REPORT=[['2','进食(次)'],['5.5','睡眠(小时)'],['48','玩耍(分钟)'],['6','喝水(次)']];
+const STAFF_NOTE={text:'奶糕今天特别乖，中午把狗粮吃得干干净净，下午和我玩了接球，现在在窝里睡得很香～',who:'店员小林 · 10 分钟前'};
+const TL_COLORS={eat:'#ffab7a',play:'#4cc9a0',sleep:'#7d9bff',care:'#ff8fb1',treat:'#ffc247',you:'#ff8a4c'};
+
+/* ============ 集中状态 ============ */
+const panelSchema={caps:new Set(ALL_CODES),services:new Set(ALL_SERVICES),qualityOptions:[1,2,3,4]};
+const INIT=()=>({online:true,av_status:0,video_quality:3,mic_switch:1,speaker_volume:60,night_vision:0,image_flip:0,viewer_count:0,wifi_rssi:-52,sd_status:1,
+  pet_activity:3,activity_level:72,env_temperature:26.5,env_humidity:55,treat_left:2,alerts:[]});
+const INIT_UI=()=>({watching:false,connecting:false,full:false,clientMute:false,talk:false,tab:'home',nextConnect:'ok',failNext:false,noData:false,shopOpen:true,
+  sheet:null,dismissed:{},connTimer:null,elapsed:0,err:null,forceAct:null,newPhotos:0,
+  timeline:[{t:'09:10',k:'eat',text:'奶糕吃完了早餐，干饭很香'},{t:'10:30',k:'play',text:'和店员小林玩接球 20 分钟'},{t:'11:40',k:'sleep',text:'午睡开始'},{t:'13:20',k:'care',text:'完成梳毛护理，毛毛蓬松啦'}],
+  album:[]});
+let deviceState=INIT(),pendingState={},draftState={},ui=INIT_UI(),seq=0;
+const has=c=>panelSchema.caps.has(c);
+const svc=c=>panelSchema.services.has(c);
+const $=id=>document.getElementById(id);
+
+/* ============ 图标 ============ */
+const P={
+ cam:'<path d="M15 10l5-3v10l-5-3z"/><rect x="3" y="6" width="12" height="12" rx="2"/>',
+ play:'<path d="M8 5v14l11-7z"/>',stop:'<rect x="6" y="6" width="12" height="12" rx="2"/>',
+ vol:'<path d="M11 5L6 9H3v6h3l5 4z"/><path d="M15.5 8.5a5 5 0 010 7M18.5 5.5a9 9 0 010 13"/>',
+ mute:'<path d="M11 5L6 9H3v6h3l5 4z"/><path d="M22 9l-6 6M16 9l6 6"/>',
+ mic:'<rect x="9" y="3" width="6" height="12" rx="3"/><path d="M5 11a7 7 0 0014 0M12 18v3"/>',
+ snap:'<path d="M4 8h3l2-3h6l2 3h3v11H4z"/><circle cx="12" cy="13" r="3.5"/>',
+ full:'<path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/>',exit:'<path d="M9 4v5H4M15 4v5h5M9 20v-5H4M15 20v-5h5"/>',
+ live:'<path d="M15 10l5-3v10l-5-3z"/><rect x="3" y="6" width="12" height="12" rx="2"/>',
+ feed:'<path d="M4 6h16M6 6l1 13h10l1-13"/><path d="M9 11h6"/>',
+ album:'<rect x="3" y="4" width="18" height="16" rx="3"/><circle cx="9" cy="10" r="1.6"/><path d="M21 16l-5-5-8 8"/>',
+ more:'<circle cx="5" cy="12" r="1.3"/><circle cx="12" cy="12" r="1.3"/><circle cx="19" cy="12" r="1.3"/>',
+ x:'<path d="M6 6l12 12M18 6L6 18"/>',warn:'<path d="M12 3l10 18H2z"/><path d="M12 10v5M12 18h.01"/>',
+ off:'<path d="M2 2l20 20"/><path d="M15 10l5-3v10M3 6h9a3 3 0 013 3v5M3 6v11a2 2 0 002 2h8"/>',
+ moon:'<path d="M20 14.5A8 8 0 019.5 4 8 8 0 1020 14.5z"/>',
+ minus:'<path d="M5 12h14"/>',plus:'<path d="M12 5v14M5 12h14"/>',chev:'<path d="M9 6l6 6-6 6"/>',
+ bone:'<path d="M7 9a2.5 2.5 0 11-1.5-4.2A2.5 2.5 0 0110 4.5L14 9l-1 1 4 4a2.5 2.5 0 114 1.5A2.5 2.5 0 1118 21.5L14 17l1-1-4-4"/>',
+ bell:'<path d="M6 17V11a6 6 0 1112 0v6l2 2H4z"/><path d="M10 21h4"/>',
+ temp:'<path d="M14 14.8V5a2 2 0 10-4 0v9.8a4 4 0 104 0z"/>',drop:'<path d="M12 3s6 6.5 6 11a6 6 0 01-12 0c0-4.5 6-11 6-11z"/>',
+ sleep:'<path d="M20 14.5A8 8 0 019.5 4 8 8 0 1020 14.5z"/>',
+ rest:'<path d="M3 17c0-3 2-5 5-5h8c3 0 5 2 5 5M7 12V9a2 2 0 014 0v3"/>',
+ run:'<circle cx="14" cy="4.5" r="1.8"/><path d="M6 20l3-5 3 2 2-5-3-2-3 1M14 12l3 3 3-1"/>',
+ eat:'<path d="M5 12h14a0 0 0 010 0 7 7 0 01-14 0zM9 5v4M12 4v5M15 5v4"/>',
+ water:'<path d="M12 3s6 6.5 6 11a6 6 0 01-12 0c0-4.5 6-11 6-11z"/>',
+ none:'<circle cx="12" cy="12" r="9"/><path d="M9 9l6 6M15 9l-6 6"/>',
+ unk:'<circle cx="12" cy="12" r="9"/><path d="M9.5 9.5a2.5 2.5 0 114 2c-1 .7-1.5 1.2-1.5 2.5M12 17h.01"/>'
+};
+const ic=n=>`<svg class="i" viewBox="0 0 24 24">${P[n]||''}</svg>`;
+const dogFace=(s=36)=>`<svg width="${s}" height="${s}" viewBox="0 0 48 48"><ellipse cx="9" cy="22" rx="6.5" ry="12" fill="#c98f3c" transform="rotate(12 9 22)"/><ellipse cx="39" cy="22" rx="6.5" ry="12" fill="#c98f3c" transform="rotate(-12 39 22)"/><circle cx="24" cy="25" r="15" fill="#f0bd68"/><ellipse cx="24" cy="31" rx="8" ry="6" fill="#fbe3b5"/><circle cx="18" cy="23" r="2.2" fill="#3a2f2a"/><circle cx="30" cy="23" r="2.2" fill="#3a2f2a"/><ellipse cx="24" cy="28.5" rx="3" ry="2.2" fill="#3a2f2a"/><path d="M21 33q3 3 6 0" stroke="#3a2f2a" stroke-width="1.6" fill="none" stroke-linecap="round"/></svg>`;
+const ACT_STYLE={0:['none','#f3efec','#a39690'],1:['rest','var(--sky)','#4f9bff'],2:['sleep','#ece9ff','#7d6bff'],3:['run','var(--mint)','#25b283'],4:['eat','var(--sun)','#e2a21c'],5:['water','var(--sky)','#3b8ef0']};
+
+/* ============ 工具 ============ */
+function toast(t){const e=$('toast');e.textContent=t;e.classList.add('show');clearTimeout(toast.t);toast.t=setTimeout(()=>e.classList.remove('show'),1900)}
+const label=(c,v)=>(ENUMS[c]&&ENUMS[c][v]!==undefined)?ENUMS[c][v]:'未知';
+const val=c=>pendingState[c]?pendingState[c].value:deviceState[c];
+const canWrite=()=>deviceState.online;
+const rssiText=()=>ui.noData?'--':deviceState.wifi_rssi+' dBm';
+const nowStr=()=>{const n=new Date();return String(n.getHours()).padStart(2,'0')+':'+String(n.getMinutes()).padStart(2,'0')};
+function addTL(k,text){ui.timeline.push({t:nowStr(),k,text})}
+function curAct(){return ui.forceAct!==null?ui.forceAct:deviceState.pet_activity}
+
+/* ============ 写操作：提交→回报→失败回退 ============ */
+function commit(code,v,after){
+  if(!canWrite()){toast('设备离线，无法操作');return}
+  if(pendingState[code])return;
+  const my=++seq;pendingState[code]={value:v,seq:my};renderAll();
+  setTimeout(()=>{
+    if(!pendingState[code]||pendingState[code].seq!==my)return;
+    delete pendingState[code];
+    if(ui.failNext){ui.failNext=false;toast('设置失败，已恢复设备当前值')}
+    else if(!deviceState.online){toast('设备已离线，设置未生效')}
+    else{deviceState[code]=v;after&&after()}
+    renderAll();renderDemo();
+  },700);
+}
+
+/* ============ 实时流 ============ */
+function startLive(){
+  if(!deviceState.online){toast('设备离线，无法查看实时流');return}
+  if(!ui.shopOpen){toast('店铺休息时段，暂不开放实时画面');return}
+  if(ui.connecting||ui.watching)return;
+  ui.err=null;ui.connecting=true;renderPlayer();
+  ui.connTimer=setTimeout(()=>{
+    ui.connecting=false;const r=ui.nextConnect;
+    if(r==='timeout')ui.err='连接超时，请检查网络后重试';
+    else if(r==='busy')ui.err=label('start_live_result',1)+'，请稍后重试';
+    else if(r==='full')ui.err=label('start_live_result',2)+'（上限 '+SPEC.viewer_count.max+' 人）';
+    else if(r==='nosig'){ui.err=label('start_live_result',3);deviceState.av_status=3}
+    else{ui.watching=true;ui.elapsed=0;deviceState.av_status=1;deviceState.viewer_count=Math.min(4,deviceState.viewer_count+1)}
+    ui.nextConnect='ok';renderAll();renderDemo();
+  },1300);
+}
+function stopLive(){
+  ui.watching=false;ui.full=false;ui.talk=false;
+  deviceState.viewer_count=Math.max(0,deviceState.viewer_count-1);
+  if(deviceState.viewer_count===0&&deviceState.av_status!==3)deviceState.av_status=0;
+  renderAll();renderDemo();
+}
+const isPlaying=()=>ui.watching&&deviceState.online&&ui.shopOpen&&(deviceState.av_status===1||deviceState.av_status===2);
+
+/* ============ 告警（EVENT） ============ */
+const ALERT_DEFS={
+  stream_error:{level:'ERROR',cls:'',text:()=>'推流异常：'+label('stream_error',1)},
+  env_abnormal:{level:'WARN',cls:'warn',text:()=>'舍内温度偏高（'+deviceState.env_temperature+'℃），店员已收到通知'},
+  sd_card_error:{level:'WARN',cls:'warn',text:()=>'设备存储卡异常，不影响观看'},
+  bark_alert:{level:'INFO',cls:'info',text:()=>PET.name+'在叫（约 72 分贝），店员正在关注'}
+};
+const LV={ERROR:0,WARN:1,INFO:2};
+function activeAlerts(){return deviceState.alerts.filter(c=>!ui.dismissed[c]).sort((a,b)=>LV[ALERT_DEFS[a].level]-LV[ALERT_DEFS[b].level])}
+function renderAlerts(){
+  const l=activeAlerts(),el=$('alerts');
+  if(!l.length){el.innerHTML='';return}
+  const d=ALERT_DEFS[l[0]];
+  el.innerHTML=`<div class="alert ${d.cls}" role="alert" aria-live="polite">${ic(l[0]==='bark_alert'?'bell':'warn')}<span>${d.text()}${l.length>1?'（共 '+l.length+' 条）':''}</span><button aria-label="关闭提示" onclick="dismissAlert('${l[0]}')">${ic('x')}</button></div>`;
+}
+function dismissAlert(c){ui.dismissed[c]=true;renderAlerts()}   // 仅隐藏提示，不清除设备事件
+
+/* ============ 渲染：宠物头部 ============ */
+function renderHead(){
+  const d=deviceState;
+  $('petHead').innerHTML=`<div class="avatar">${dogFace(40)}</div>
+   <div class="grow"><h1>${PET.name}<span class="tag">${PET.breed} · ${PET.age}</span></h1><div class="meta">${PET.shop} · 寄养第 ${PET.day} 天</div></div>
+   <div class="live-chip"><span class="dot" style="background:${d.online?'var(--success)':'#bbb'}"></span>${d.online?'在线':'离线'}</div>`;
+}
+
+/* ============ 渲染：播放器 ============ */
+function paws(){return `<svg class="paws" viewBox="0 0 200 120" preserveAspectRatio="xMidYMid slice"><g fill="#fff"><circle cx="30" cy="30" r="6"/><circle cx="45" cy="22" r="5"/><circle cx="60" cy="30" r="6"/><ellipse cx="45" cy="45" rx="12" ry="9"/><g transform="translate(110 60) rotate(20)"><circle cx="30" cy="30" r="6"/><circle cx="45" cy="22" r="5"/><circle cx="60" cy="30" r="6"/><ellipse cx="45" cy="45" rx="12" ry="9"/></g></g></svg>`}
+function renderPlayer(){
+  const d=deviceState,pl=$('player'),po=$('poster'),hud=$('hud'),playing=isPlaying();
+  pl.classList.toggle('playing',playing);pl.classList.toggle('full',ui.full&&playing);
+  po.className='poster';
+  if(!playing){
+    let inner;
+    if(!d.online){po.classList.add('offline');inner=`<div class="ring">${ic('off')}</div><div>设备离线，暂时看不到${PET.name}</div><button class="live-btn" disabled>${ic('play')}实时流</button>`}
+    else if(!ui.shopOpen){po.classList.add('closed');inner=`<div class="ring">${ic('moon')}</div><div>店铺休息时段，暂不开放实时画面<br>开放时间 ${PET.hours}</div><button class="live-btn" disabled>${ic('play')}实时流</button>`}
+    else if(ui.connecting){inner=`<div class="spin"></div><div>正在连接${PET.shop}的摄像头…</div>`}
+    else if(ui.err||d.av_status===3){po.classList.add('err');inner=`<div class="ring">${ic('warn')}</div><div>${ui.err||'设备推流异常，暂时无法播放'}</div><button class="live-btn" onclick="ui.err=null;startLive()">重试</button>`}
+    else inner=`<div class="ring">${ic('cam')}</div><div>${d.av_status===1?'摄像头正在推流，点击观看':'看看'+PET.name+'在店里的样子'}</div><button class="live-btn" onclick="startLive()">${ic('play')}实时流</button>`;
+    po.innerHTML=paws()+inner;return;
+  }
+  const q=val('video_quality');
+  const act=curAct();
+  hud.innerHTML=`
+   <div class="badge"><b><i></i>LIVE</b><b id="tm">00:00</b></div>
+   <div class="badge-r">${has('viewer_count')&&!ui.noData?`<b>${d.viewer_count} 人在看</b>`:''}${has('wifi_rssi')?`<b>Wi-Fi ${rssiText()}</b>`:''}</div>
+   ${has('pet_activity')?`<div class="mood">${ic(ACT_STYLE[act]?ACT_STYLE[act][0]:'unk')}${ui.noData?'--':(act===0?label('pet_activity',0):PET.name+label('pet_activity',act))}</div>`:''}
+   <div class="bar">
+     <div class="g">
+       <button aria-label="${ui.clientMute?'打开声音':'静音'}" onclick="ui.clientMute=!ui.clientMute;renderPlayer()">${ic(ui.clientMute?'mute':'vol')}</button>
+       ${has('mic_switch')&&val('mic_switch')&&!ui.clientMute?'<div class="lvl" id="lvl"><s></s><s></s><s></s><s></s><s></s></div>':''}
+       ${has('mic_switch')&&!val('mic_switch')?'<span style="font-size:11px;opacity:.9">店内收音已关</span>':''}
+     </div>
+     <div class="g">
+       ${has('video_quality')?`<button class="q" aria-label="切换画质" onclick="openQuality()">${label('video_quality',q)}</button>`:`<span class="q" style="border:1px solid rgba(255,255,255,.8);border-radius:6px;padding:2px 7px;font-size:12px;margin:0 4px">${RES[q]?RES[q][2]:''}</span>`}
+       <button class="${ui.talk?'on':''}" aria-label="对讲" onclick="toggleTalk()">${ic('mic')}</button>
+       <button aria-label="${ui.full?'退出全屏':'全屏'}" onclick="ui.full=!ui.full;renderPlayer()">${ic(ui.full?'exit':'full')}</button>
+       <button aria-label="停止实时流" onclick="stopLive()">${ic('stop')}</button>
+     </div>
+   </div>`;
+  applyVideoFx();
+}
+function applyVideoFx(){
+  const cv=$('cv'),f=val('image_flip'),nv=val('night_vision'),q=val('video_quality');
+  cv.style.transform=(has('image_flip')&&f===1)?'rotate(180deg)':'none';
+  cv.style.filter=(has('night_vision')&&nv===1)?'grayscale(1) sepia(1) hue-rotate(65deg) saturate(2.4) brightness(1.1)':'none';
+  const r=RES[q]||RES[3];if(cv.width!==r[0]){cv.width=r[0];cv.height=r[1]}
+  cv.style.imageRendering=r[0]<400?'pixelated':'auto';
+}
+function toggleTalk(){
+  if(!canWrite())return;
+  ui.talk=!ui.talk;deviceState.av_status=ui.talk?2:1;
+  toast(ui.talk?'对讲已开启，店里的扬声器会播放你的声音':'对讲已结束');
+  renderAll();renderDemo();
+}
+
+/* ============ 模拟宠物店画面（演示用，正式版由设备推流提供） ============ */
+function drawDog(c,x,y,s,pose,t){
+  c.save();c.translate(x,y);c.scale(s,s);
+  const gold='#efbb67',dark='#d19a47',cream='#fbe3b5',ink='#3a2f2a';
+  const ell=(cx,cy,rx,ry,col,rot=0)=>{c.fillStyle=col;c.beginPath();c.ellipse(cx,cy,rx,ry,rot,0,7);c.fill()};
+  const play=pose==='play',wag=Math.sin(t/(play?80:300))*(play?.55:.25);
+  if(pose==='sleep'){
+    const br=Math.sin(t/700)*2;
+    ell(-52,-20,10,22,gold,-1.1+wag*.2);
+    ell(0,-28+br*.3,62,28+br,gold);ell(30,-14,30,12,cream);
+    ell(52,-22,24,22,gold);ell(36,-20,8,16,dark,.3);ell(60,-14,13,9,cream);ell(68,-16,4,3,ink);
+    c.strokeStyle=ink;c.lineWidth=2.4;c.beginPath();c.arc(54,-26,4,.2,Math.PI-.2);c.stroke();
+    c.fillStyle='rgba(120,100,230,.8)';c.font='bold 22px sans-serif';
+    for(let i=0;i<3;i++){const p=((t/900+i/3)%1);c.globalAlpha=1-p;c.fillText('z',70+i*10+p*14,-52-p*40-i*6)}
+    c.globalAlpha=1;c.restore();return;
+  }
+  let by=0,hx=62,hy=-86,tongue=false,eyeClosed=false;
+  if(play){by=-Math.abs(Math.sin(t/230))*30;tongue=true}
+  if(pose==='eat'||pose==='drink'){hx=84;hy=-34+Math.sin(t/200)*3}
+  if(pose==='rest'){by=0}
+  c.translate(0,by);
+  ell(-56,-70,9,26,gold,-.9+wag);
+  if(pose==='rest'){
+    ell(0,-28,62,26,gold);ell(36,-6,18,8,cream);ell(-34,-8,22,10,dark);
+    hx=58;hy=-52;
+  }else{
+    for(const lx of[-38,-18,22,42]){c.fillStyle=lx<0?dark:gold;c.beginPath();c.roundRect(lx-7,-40,14,40+(-by),6);c.fill()}
+    ell(0,-58,60,32,gold);ell(10,-40,36,14,cream);
+  }
+  // 头
+  ell(hx-18,hy-4,10,22,dark,.35);
+  ell(hx,hy,27,25,gold);
+  ell(hx+20,hy+8,17,12,cream);ell(hx+33,hy+4,5.5,4.2,ink);
+  c.fillStyle=ink;c.beginPath();c.arc(hx+8,hy-8,3.6,0,7);c.fill();
+  c.fillStyle='#fff';c.beginPath();c.arc(hx+9,hy-9.2,1.2,0,7);c.fill();
+  if(tongue)ell(hx+26,hy+19,5,8,'#ff8fa0');
+  else{c.strokeStyle=ink;c.lineWidth=2;c.beginPath();c.arc(hx+24,hy+12,6,.15,Math.PI*.85);c.stroke()}
+  c.restore();
+}
+function drawScene(c,W,H,t,act){
+  const u=H/360;
+  let g=c.createLinearGradient(0,0,0,H*.7);g.addColorStop(0,'#fff0dc');g.addColorStop(1,'#ffe0c0');c.fillStyle=g;c.fillRect(0,0,W,H);
+  c.fillStyle='#f6c9a0';c.fillRect(0,H*.5,W,H*.12);                              // 墙裙
+  g=c.createLinearGradient(0,H*.66,0,H);g.addColorStop(0,'#d9a46f');g.addColorStop(1,'#c58b55');c.fillStyle=g;c.fillRect(0,H*.66,W,H*.34);  // 木地板
+  c.strokeStyle='rgba(120,70,30,.18)';c.lineWidth=1.5*u;for(let i=1;i<7;i++){c.beginPath();c.moveTo(0,H*.66+i*H*.05);c.lineTo(W,H*.66+i*H*.05);c.stroke()}
+  c.fillStyle='#cfeaff';c.beginPath();c.roundRect(W*.06,H*.1,W*.24,H*.34,12*u);c.fill();                  // 窗
+  c.strokeStyle='#fff';c.lineWidth=5*u;c.stroke();c.beginPath();c.moveTo(W*.18,H*.1);c.lineTo(W*.18,H*.44);c.moveTo(W*.06,H*.27);c.lineTo(W*.3,H*.27);c.stroke();
+  c.fillStyle='#ffd1d9';c.beginPath();c.roundRect(W*.45,H*.14,W*.17,H*.13,8*u);c.fill();c.fillStyle='#fff';c.font=`bold ${16*u}px sans-serif`;c.fillText('Pet Home',W*.468,H*.215);// 招牌
+  c.fillStyle='#ff9ab0';c.beginPath();c.ellipse(W*.28,H*.9,95*u,24*u,0,0,7);c.fill();                          // 宠物窝
+  c.fillStyle='#ffc0cf';c.beginPath();c.ellipse(W*.28,H*.88,80*u,18*u,0,0,7);c.fill();
+  const bx=W*.76,wx=W*.9;
+  const bowl=(x,col,inner)=>{c.fillStyle=col;c.beginPath();c.ellipse(x,H*.9,28*u,12*u,0,0,7);c.fill();c.fillStyle=inner;c.beginPath();c.ellipse(x,H*.885,22*u,8*u,0,0,7);c.fill()};
+  bowl(bx,'#7aa7e8','#b8793c');bowl(wx,'#7aa7e8','#bfe3ff');
+  c.fillStyle='#ff6b6b';c.beginPath();c.arc(W*.58+Math.sin(t/600)*2,H*.93,11*u,0,7);c.fill();                // 小球
+  c.fillStyle='#48b26a';c.beginPath();c.ellipse(W*.04,H*.62,18*u,40*u,0,0,7);c.fill();
+  const s=H/300,by=H*.92;
+  const frames={1:['rest',W*.3],2:['sleep',W*.27],3:['play',W*(.25+.4*(.5+.5*Math.sin(t/1800)))],4:['eat',bx-98*s],5:['drink',wx-98*s]};
+  const f=frames[act];
+  if(f)drawDog(c,f[1],by,s,f[0],t);
+  c.fillStyle='rgba(255,255,255,.92)';c.font=`${Math.max(9,12*u)}px monospace`;
+  c.fillText('2026-11-16 '+new Date().toTimeString().slice(0,8),8*u,H-8*u);
+  c.fillText(PET.shop+'（模拟）',W-190*u,H-8*u);
+}
+let last=0;
+function loop(t){
+  requestAnimationFrame(loop);
+  if(!isPlaying())return;
+  if(t-last<66)return;last=t;
+  const cv=$('cv');drawScene(cv.getContext('2d'),cv.width,cv.height,t,has('pet_activity')?curAct():1);
+  const el=$('tm');if(el){const s=Math.floor(ui.elapsed);el.textContent=String(Math.floor(s/60)).padStart(2,'0')+':'+String(s%60).padStart(2,'0')}
+  ui.elapsed+=.066;
+  const lv=$('lvl');if(lv)[...lv.children].forEach(b=>b.style.height=(3+Math.random()*13)+'px');
+}
+
+/* ============ 快捷操作：抓拍 / 投喂 / 对讲 ============ */
+function snapshot(){
+  if(!isPlaying()){toast('先点实时流，再抓拍哦');return}
+  const cv=$('cv');ui.album.unshift({src:cv.toDataURL('image/jpeg',.8),time:nowStr()});ui.newPhotos++;
+  toast('已抓拍，保存到相册');renderAll();
+}
+function treat(){
+  if(!deviceState.online){toast('设备离线，无法投喂');return}
+  if(has('treat_left')&&deviceState.treat_left<=0){toast('今日零食已投喂完');return}
+  if(pendingState.treat)return;
+  pendingState.treat={seq:++seq};renderAll();
+  setTimeout(()=>{
+    delete pendingState.treat;
+    if(ui.failNext){ui.failNext=false;toast('投喂失败：设备忙，请稍后再试')}
+    else{
+      if(has('treat_left'))deviceState.treat_left=Math.max(0,deviceState.treat_left-1);
+      ui.forceAct=4;addTL('treat','你给'+PET.name+'投喂了一份零食');toast(PET.name+'收到零食啦～');
+      setTimeout(()=>{ui.forceAct=null;renderAll()},4000);
+    }
+    renderAll();renderDemo();
+  },900);
+}
+
+/* ============ 渲染：首页内容 ============ */
+function tempInfo(){
+  const t=deviceState.env_temperature;if(ui.noData)return['--','',''];
+  if(t>SPEC.temp.hi)return[t.toFixed(1),'偏热','#e5683a'];
+  if(t<SPEC.temp.lo)return[t.toFixed(1),'偏冷','#3b8ef0'];
+  return[t.toFixed(1),'舒适','#25b283'];
+}
+function renderHome(){
+  const d=deviceState;let h='';
+  if(has('pet_activity')||has('activity_level')){
+    const a=curAct(),st=ACT_STYLE[a]||['unk','#f3efec','#a39690'];
+    h+=`<div class="card"><h3>${PET.name}的状态<small>设备实时识别</small></h3><div class="status-row">`;
+    if(has('pet_activity'))h+=`<div class="act-ic" style="background:${ui.noData?'#f3efec':st[1]};color:${ui.noData?'#a39690':st[2]}">${ic(ui.noData?'unk':st[0])}</div><div class="t"><b>${ui.noData?'--':(a===0?label('pet_activity',0):label('pet_activity',a))}</b><span>${d.online?(isPlaying()?'画面同步中':'来自设备最新回报'):'设备离线，显示最后一次状态'}</span></div>`;
+    else h+=`<div class="t"><b>活跃度</b></div>`;
+    if(has('activity_level')){
+      const v=ui.noData?null:d.activity_level,C=138.2;
+      h+=`<div class="ringbox"><svg viewBox="0 0 60 60"><circle cx="30" cy="30" r="22" fill="none" stroke="#f6ece6" stroke-width="7"/><circle cx="30" cy="30" r="22" fill="none" stroke="var(--primary)" stroke-width="7" stroke-linecap="round" stroke-dasharray="${C}" stroke-dashoffset="${v===null?C:C*(1-v/100)}"/></svg><div>${v===null?'--':v+'%'}</div><small>活跃度</small></div>`;
+    }
+    h+=`</div>`;
+    if(has('env_temperature')||has('env_humidity')){
+      h+=`<div class="tiles">`;
+      if(has('env_temperature')){const[v,tag,col]=tempInfo();h+=`<div class="tile" style="background:#fff3ec"><small>${ic('temp').replace('<svg','<svg style="width:14px;height:14px;vertical-align:-2px"')} 舍内温度<em style="color:${col}">${tag}</em></small><b>${v}<i>℃</i></b></div>`}
+      if(has('env_humidity'))h+=`<div class="tile" style="background:var(--sky)"><small>${ic('drop').replace('<svg','<svg style="width:14px;height:14px;vertical-align:-2px"')} 舍内湿度</small><b>${ui.noData?'--':d.env_humidity}<i>%</i></b></div>`;
+      h+=`</div>`;
+    }
+    h+=`</div>`;
+  }
+  // 快捷操作
+  const q=[];
+  if(svc('snapshot'))q.push(`<button class="qbtn" ${!isPlaying()?'disabled':''} onclick="snapshot()"><span class="c" style="background:var(--primary-soft);color:var(--primary-deep)">${ic('snap')}</span>抓拍</button>`);
+  if(svc('dispense_treat')){
+    const left=has('treat_left')?d.treat_left:null,none=left===0;
+    q.push(`<button class="qbtn" ${(!d.online||none||pendingState.treat)?'disabled':''} onclick="treat()"><span class="c" style="background:var(--sun);color:#d89a10">${ic('bone')}</span>${pendingState.treat?'投喂中…':'投喂零食'}<small>${left===null?'':(none?'今日已投完':'今日还可 '+left+' 次')}</small></button>`);
+  }
+  q.push(`<button class="qbtn ${ui.talk?'on':''}" ${!isPlaying()?'disabled':''} onclick="toggleTalk()"><span class="c" style="background:var(--mint);color:#25b283">${ic('mic')}</span>${ui.talk?'结束对讲':'和它说话'}</button>`);
+  h+=`<div class="quick" style="grid-template-columns:repeat(${q.length},1fr)">${q.join('')}</div>`;
+  $('homeBody').innerHTML=h;
+}
+
+/* ============ 渲染：动态页（平台数据） ============ */
+function renderFeed(){
+  let h='';
+  if(has('pet_activity')){
+    h+=`<div class="card"><h3>今日日报<small>平台根据设备识别汇总</small></h3><div class="report">${REPORT.map(([v,k])=>`<div><b>${ui.noData?'--':v}</b><span>${k}</span></div>`).join('')}</div></div>`;
+  }
+  h+=`<div class="card note-card"><h3 style="margin-bottom:6px">店员留言</h3><p>${STAFF_NOTE.text}</p><small>${STAFF_NOTE.who}</small></div>`;
+  const tl=[...ui.timeline].reverse();
+  h+=`<div class="card"><h3>今日动态<small>${PET.name}的一天</small></h3><div class="tl">${tl.map(i=>`<div class="tl-i" style="--c:${TL_COLORS[i.k]||'#ffab7a'}"><b>${i.t}</b><span>${i.text}</span></div>`).join('')}</div></div>`;
+  $('pageFeed').innerHTML=h;
+}
+
+/* ============ 渲染：相册 ============ */
+function renderAlbum(){
+  $('pageAlbum').innerHTML=ui.album.length?
+   `<div class="label">${PET.name}的精彩瞬间 · ${ui.album.length} 张</div><div class="grid">${ui.album.map((p,i)=>`<button class="photo" aria-label="查看照片" onclick="openPhoto(${i})"><img src="${p.src}" alt=""><span>${p.time}</span></button>`).join('')}</div>`:
+   `<div class="empty">${dogFace(56)}<br>还没有照片<br>观看实时流时点“抓拍”，留住${PET.name}的可爱瞬间</div>`;
+}
+function openPhoto(i){ui.sheet={photo:true};openSheet(`<button class="x" aria-label="关闭" onclick="closeSheet()">${ic('x')}</button><h2>${PET.name} · ${ui.album[i].time}</h2><img src="${ui.album[i].src}" alt="">`)}
+
+/* ============ 渲染：更多页 ============ */
+function moreItems(){
+  const d=deviceState,watch=[],pic=[],info=[];
+  if(has('video_quality'))watch.push('q');if(has('mic_switch'))watch.push('m');if(has('speaker_volume'))watch.push('v');
+  if(has('night_vision'))pic.push('n');if(has('image_flip'))pic.push('f');
+  if(has('viewer_count'))info.push(['当前观看人数',ui.noData?'--':d.viewer_count+' 人']);
+  if(has('wifi_rssi'))info.push(['Wi-Fi 信号强度',rssiText()]);
+  if(has('sd_status'))info.push(['存储卡状态',ui.noData?'--':label('sd_status',d.sd_status)]);
+  return{watch,pic,info};
+}
+function renderMore(){
+  const{watch,pic,info}=moreItems(),off=!deviceState.online;let h='';
+  if(watch.length){
+    h+='<div class="label">观看设置</div><div class="group">';
+    if(watch.includes('q'))h+=`<button class="item" ${off?'disabled':''} onclick="openQuality()"><span>画质</span><span class="v">${pendingState.video_quality?'提交中…':label('video_quality',val('video_quality'))}${ic('chev')}</span></button>`;
+    if(watch.includes('m')){const on=!!val('mic_switch');h+=`<div class="item"><span>店内收音<br><small style="color:var(--sub);font-size:12px">${on?'观看时可听到店里的声音':'已关闭，仅有画面'}</small></span><button class="sw ${on?'on':''} ${pendingState.mic_switch?'pend':''}" aria-label="店内收音开关" aria-pressed="${on}" ${off||pendingState.mic_switch?'disabled':''} onclick="commit('mic_switch',${on?0:1})"></button></div>`}
+    if(watch.includes('v')){const v=val('speaker_volume'),s=SPEC.speaker_volume;h+=`<div class="item"><span>对讲音量<br><small style="color:var(--sub);font-size:12px">店里扬声器播放你的声音</small></span><div class="step"><button aria-label="减小" ${off||v<=s.min||pendingState.speaker_volume?'disabled':''} onclick="commit('speaker_volume',${v-s.step})">${ic('minus')}</button><b>${v}${s.unit}</b><button aria-label="增大" ${off||v>=s.max||pendingState.speaker_volume?'disabled':''} onclick="commit('speaker_volume',${v+s.step})">${ic('plus')}</button></div></div>`}
+    h+='</div>';
+  }
+  if(pic.length){
+    h+='<div class="label">画面设置</div><div class="group">';
+    if(pic.includes('n'))h+=`<button class="item" ${off?'disabled':''} onclick="openNight()"><span>夜视模式</span><span class="v">${pendingState.night_vision?'提交中…':label('night_vision',val('night_vision'))}${ic('chev')}</span></button>`;
+    if(pic.includes('f')){const on=val('image_flip')===1;h+=`<div class="item"><span>画面翻转 180°</span><button class="sw ${on?'on':''} ${pendingState.image_flip?'pend':''}" aria-label="画面翻转" ${off||pendingState.image_flip?'disabled':''} onclick="commit('image_flip',${on?0:1})"></button></div>`}
+    h+='</div>';
+  }
+  if(info.length)h+='<div class="label">设备状态</div><div class="group">'+info.map(([k,v])=>`<div class="item"><span>${k}</span><span class="v">${v}</span></div>`).join('')+'</div>';
+  $('pageMore').innerHTML=h;
+}
+
+/* ============ 导航 ============ */
+function tabList(){
+  const m=moreItems(),t=[['home','实时','live']];
+  t.push(['feed','动态','feed']);                       // 平台能力，常驻
+  if(svc('snapshot'))t.push(['album','相册','album']);
+  if(m.watch.length||m.pic.length||m.info.length)t.push(['more','更多','more']);
+  return t;
+}
+const TITLES={home:'',feed:'宠物动态',album:'相册',more:'更多'};
+function renderNav(){
+  const t=tabList();
+  if(!t.find(x=>x[0]===ui.tab))ui.tab='home';
+  $('tabs').innerHTML=t.map(([k,n,i])=>`<button class="${ui.tab===k?'on':''}" onclick="go('${k}')"><span class="ic">${ic(i)}</span>${n}${k==='album'&&ui.newPhotos?`<span class="num">${ui.newPhotos}</span>`:''}</button>`).join('');
+  for(const k of['home','feed','album','more'])$('page'+k[0].toUpperCase()+k.slice(1)).classList.toggle('hide',ui.tab!==k);
+  $('navTitle').textContent=TITLES[ui.tab];
+  $('btnBack').style.visibility=ui.tab==='home'?'hidden':'visible';
+  $('btnSet').style.visibility=ui.tab==='home'?'visible':'hidden';
+}
+function go(k){closeSheet();ui.tab=k;if(k==='album')ui.newPhotos=0;renderNav()}
+$('btnBack').onclick=()=>{if(ui.sheet)closeSheet();else go('home')};
+$('btnSet').onclick=()=>toast('设备设置（平台通用页面）');
+
+/* ============ 底部浮层 ============ */
+function openSheet(html){const s=$('sheet');s.innerHTML=html;s.classList.add('show');$('mask').classList.add('show')}
+function closeSheet(){ui.sheet=null;draftState={};$('sheet').classList.remove('show');$('mask').classList.remove('show')}
+$('mask').onclick=closeSheet;
+function sheetHtml(title,sub,code,opts){
+  return `<button class="x" aria-label="关闭" onclick="closeSheet()">${ic('x')}</button><h2>${title}</h2>`+
+   opts.map(v=>`<button class="opt ${draftState[code]===v?'on':''}" onclick="pick('${code}',${v})"><span>${label(code,v)}<small>${sub?sub(v):''}</small></span>${draftState[code]===v?'✓':''}</button>`).join('')+
+   `<button class="ok-btn" ${draftState[code]===deviceState[code]?'disabled':''} onclick="confirmPick('${code}')">确定</button>`;
+}
+function openOf(code,title,opts,sub){
+  if(!canWrite()){toast('设备离线，无法操作');return}
+  if(opts.length<2){toast('当前仅支持「'+label(code,opts[0])+'」');return}
+  ui.sheet={code,title,opts,sub};draftState[code]=deviceState[code];
+  openSheet(sheetHtml(title,sub,code,opts));
+}
+function openQuality(){openOf('video_quality','选择画质',panelSchema.qualityOptions,v=>RES[v]?RES[v][2]:'')}
+function openNight(){openOf('night_vision','夜视模式',[0,1,2],null)}
+function pick(code,v){draftState[code]=v;const s=ui.sheet;$('sheet').innerHTML=sheetHtml(s.title,s.sub,code,s.opts)}
+function confirmPick(code){const v=draftState[code];closeSheet();commit(code,v,applyVideoFx)}
+
+function renderAll(){renderAlerts();renderHead();renderPlayer();renderHome();renderFeed();renderAlbum();renderMore();renderNav()}
+
+/* ============ 左侧演示面板（评审用） ============ */
+function btn(label,on,fn){return `<button class="${on?'on':''}" onclick="${fn}">${label}</button>`}
+function renderDemo(){
+  const d=deviceState,full=panelSchema.caps.size>3;
+  const sec=(t,items)=>`<h4>${t}</h4><div class="row">${items.join('')}</div>`;
+  const acts=[0,1,2,3,4,5];
+  $('demo').innerHTML=`<h3>演示场景</h3><div class="note">仅用于评审，不属于正式 App</div>`+
+  sec('设备连接',[btn('在线',d.online,'D.online(true)'),btn('离线',!d.online,'D.online(false)')])+
+  sec('店铺营业(平台)',[btn('营业中',ui.shopOpen,'D.shop(true)'),btn('休息时段',!ui.shopOpen,'D.shop(false)')])+
+  sec('宠物状态(AI)',acts.map(v=>btn(label('pet_activity',v).replace('正在',''),d.pet_activity===v,`D.act(${v})`)).concat([btn('未知值',!acts.includes(d.pet_activity),'D.act(9)')]))+
+  sec('活跃度',[0,35,72,100].map(v=>btn(v+'%',d.activity_level===v,`D.lvl(${v})`)))+
+  sec('舍内温度',[['舒适',26.5],['偏热',31.2],['偏冷',14.6]].map(([n,v])=>btn(n,d.env_temperature===v,`D.temp(${v})`)))+
+  sec('今日剩余零食',[0,1,2,3].map(v=>btn(v,d.treat_left===v,`D.treat(${v})`)))+
+  sec('推流状态',[0,1,2,3].map(v=>btn(label('av_status',v),d.av_status===v,`D.av(${v})`)))+
+  sec('下次点实时流',[['ok','成功'],['busy','设备忙'],['full','人数已满'],['nosig','无信号'],['timeout','超时']].map(([k,n])=>btn(n,ui.nextConnect===k,`ui.nextConnect='${k}';renderDemo()`)))+
+  sec('数据状态',[btn('有数据',!ui.noData,'D.nodata(false)'),btn('无数据',ui.noData,'D.nodata(true)')])+
+  sec('观看人数',[0,1,2,3,4].map(v=>btn(v,d.viewer_count===v,`D.viewers(${v})`)))+
+  sec('告警(可叠加)',[['stream_error','推流异常'],['env_abnormal','环境异常'],['sd_card_error','存储卡'],['bark_alert','吠叫']].map(([c,n])=>btn(n,d.alerts.includes(c),`D.toggle('${c}')`)).concat([btn('全部恢复',false,'D.clearAlerts()')]))+
+  sec('操作反馈',[btn('正常',!ui.failNext,'ui.failNext=false;renderDemo()'),btn('下次失败',ui.failNext,'ui.failNext=true;renderDemo()')])+
+  sec('能力组合',[btn('完整能力',full,'D.caps(true)'),btn('仅必选',!full,'D.caps(false)')])+
+  sec('画质枚举裁剪',[btn('4项',panelSchema.qualityOptions.length===4,'D.qo([1,2,3,4])'),btn('2项',panelSchema.qualityOptions.length===2,'D.qo([1,3])'),btn('1项',panelSchema.qualityOptions.length===1,'D.qo([3])'),btn('当前值未知',!panelSchema.qualityOptions.includes(d.video_quality),'D.qo([1,2],true)')])+
+  `<button class="reset" onclick="D.reset()">重置演示</button>`;
+}
+const D={
+  online(v){deviceState.online=v;if(!v){ui.full=false;ui.talk=false}refresh()},
+  shop(v){ui.shopOpen=v;if(!v){ui.full=false;ui.talk=false}refresh()},
+  act(v){deviceState.pet_activity=v;ui.forceAct=null;refresh()},
+  lvl(v){deviceState.activity_level=v;refresh()},
+  temp(v){deviceState.env_temperature=v;const i=deviceState.alerts.indexOf('env_abnormal');if(v>28||v<18){if(i<0)deviceState.alerts.push('env_abnormal');delete ui.dismissed.env_abnormal}else if(i>=0)deviceState.alerts.splice(i,1);refresh()},
+  treat(v){deviceState.treat_left=v;refresh()},
+  av(v){deviceState.av_status=v;if(v!==1&&v!==2){ui.watching=false;ui.full=false;ui.talk=false}refresh()},
+  nodata(v){ui.noData=v;refresh()},
+  viewers(v){deviceState.viewer_count=v;refresh()},
+  toggle(c){const a=deviceState.alerts,i=a.indexOf(c);delete ui.dismissed[c];
+    if(i>=0){a.splice(i,1);if(c==='stream_error'&&deviceState.av_status===3)deviceState.av_status=0}
+    else{a.push(c);if(c==='stream_error'){deviceState.av_status=3;ui.watching=false;ui.full=false}}
+    refresh()},
+  clearAlerts(){deviceState.alerts=[];ui.dismissed={};if(deviceState.av_status===3)deviceState.av_status=0;deviceState.env_temperature=26.5;refresh()},
+  caps(full){panelSchema.caps=new Set(full?ALL_CODES:['av_status']);panelSchema.services=new Set(full?ALL_SERVICES:['start_live','stop_live']);refresh()},
+  qo(list,unknown){panelSchema.qualityOptions=list;if(unknown)deviceState.video_quality=9;else if(!list.includes(deviceState.video_quality))deviceState.video_quality=list[list.length-1];refresh()},
+  reset(){clearTimeout(ui.connTimer);closeSheet();deviceState=INIT();pendingState={};ui=INIT_UI();seedAlbum();panelSchema.caps=new Set(ALL_CODES);panelSchema.services=new Set(ALL_SERVICES);panelSchema.qualityOptions=[1,2,3,4];refresh()}
+};
+function refresh(){renderAll();renderDemo()}
+
+/* 相册预置照片：用同一场景函数离屏绘制 */
+function seedAlbum(){
+  [[3,'11:05'],[2,'11:52'],[4,'09:12']].forEach(([a,time])=>{
+    const c=document.createElement('canvas');c.width=480;c.height=300;drawScene(c.getContext('2d'),480,300,1200+a*500,a);
+    ui.album.push({src:c.toDataURL('image/jpeg',.8),time});
+  });
+}
+
+/* ============ 右侧能力说明（来自物模型，不含演示项） ============ */
+$('spec').innerHTML=`<h3>核心能力说明</h3>
+<div>ProductKey <code>a1AvPanel001</code> · TSL 1.1.0 · 模型 1.1.0</div>
+<table><tr><th>类型</th><th>数量</th></tr><tr><td>PROPERTY</td><td>14（R 9 / RW 5）</td></tr><tr><td>EVENT</td><td>4（ERROR 1 / WARN 2 / INFO 1）</td></tr><tr><td>SERVICE</td><td>4</td></tr></table>
+<b>必选</b>：<code>av_status</code>、<code>start_live</code>、<code>stop_live</code><br>
+<b>看宠相关</b>：pet_activity、activity_level、env_temperature、env_humidity、treat_left、dispense_treat、bark_alert、env_abnormal<br>
+<b>核心流程</b>：设备在线且店铺营业 → 点击“实时流” → <code>start_live</code> → 看到并听到店里的画面。<br>
+<b>平台能力（非 TSL）</b>：宠物档案、店铺营业时段、今日日报、店员留言、动态时间线、相册存储、实时音视频通道。`;
+
+/* ============ 启动 ============ */
+setInterval(()=>{const n=new Date();$('clock').textContent=n.getHours()+':'+String(n.getMinutes()).padStart(2,'0')},10000);
+seedAlbum();refresh();requestAnimationFrame(loop);
+</script>
+</body>
+</html>
