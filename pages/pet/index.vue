@@ -119,11 +119,13 @@ export default {
     if (this.embed && options.token) {
       try { uni.setStorageSync('access_token', String(options.token)) } catch (error) { console.warn('[pet] 内嵌登录态写入失败', error) }
     }
-    if (!this.deviceId) this.deviceId = this.demo ? 'demo-device' : ''
     if (!this.deviceId) {
-      this.loading = false
-      this.loadError = '缺少设备信息，请从设备列表进入'
-      return
+      if (!this.demo) {
+        // 已登录但未带 device_id：回到宠物列表，由列表带 device_id 进入面板。
+        uni.reLaunch({ url: '/pages/c/pets/index' })
+        return
+      }
+      this.deviceId = 'demo-device'
     }
     this.boot()
   },

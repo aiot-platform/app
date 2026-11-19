@@ -167,6 +167,70 @@ export default {
   },
   pages: {
     loginTitle: 'Sign In',
+    // C-end (pet parents): login / register / pet list / scan to bind
+    cend: {
+      appName: 'Pet Care',
+      form: {
+        phone: 'Phone',
+        phonePlaceholder: 'Enter your phone number',
+        password: 'Password',
+        passwordPlaceholder: 'Enter your password',
+        passwordHint: 'At least 6 characters',
+        confirmPassword: 'Confirm password',
+        confirmPasswordPlaceholder: 'Re-enter your password',
+        nickname: 'Nickname',
+        nicknamePlaceholder: 'Optional, helps staff address you',
+        server: 'Server'
+      },
+      login: {
+        slogan: 'Watch your pet anytime, anywhere',
+        submit: 'Sign in',
+        noAccount: "Don't have an account?",
+        register: 'Sign up',
+        demo: 'Preview the demo panel',
+        failed: 'Sign-in failed, check phone and password',
+        phoneInvalid: 'Please enter a valid phone number',
+        passwordRequired: 'Please enter your password'
+      },
+      register: {
+        title: 'Create parent account',
+        subtitle: 'After signing up, ask the store for a bind code and scan it to bind your pet device.',
+        submit: 'Sign up and continue',
+        haveAccount: 'Already have an account?',
+        login: 'Sign in',
+        success: 'Signed up',
+        failed: 'Sign-up failed, please try again',
+        passwordTooShort: 'Password must be at least 6 characters',
+        passwordMismatch: 'Passwords do not match'
+      },
+      pets: {
+        title: 'My pets',
+        desc: 'Pick a pet to open the live care panel',
+        bind: 'Scan to bind',
+        empty: 'No pets bound yet',
+        bindNow: 'Bind now',
+        unknownBreed: 'Breed not set',
+        boarding: 'Day {days} of boarding',
+        logout: 'Sign out',
+        logoutConfirm: 'Sign out of the current account?',
+        loadFailed: 'Failed to load pets'
+      },
+      bind: {
+        title: 'Bind pet device',
+        subtitle: 'Scan the bind code shown by the store, or enter it manually.',
+        scan: 'Scan to bind',
+        scanEmpty: 'No bind code detected, retry or enter manually',
+        scanFailed: 'Scanning is not supported here, please enter the code manually',
+        manualDivider: 'or enter the bind code manually',
+        code: 'Bind code',
+        codePlaceholder: 'Enter the bind code from the store',
+        submit: 'Confirm binding',
+        success: 'Bound successfully',
+        failed: 'Binding failed, check the bind code',
+        codeRequired: 'Please enter the bind code',
+        back: 'Back to pet list'
+      }
+    },
     register: 'Sign Up',
     alarmsTitle: 'Alerts',
     alarmDetailTitle: 'Alert Details',

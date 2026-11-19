@@ -165,6 +165,70 @@ export default {
   },
   pages: {
     loginTitle: '登录',
+    // C 端（宠物家长）：登录 / 注册 / 宠物列表 / 扫码绑定
+    cend: {
+      appName: '宠物看护',
+      form: {
+        phone: '手机号',
+        phonePlaceholder: '请输入手机号',
+        password: '密码',
+        passwordPlaceholder: '请输入密码',
+        passwordHint: '至少 6 位，建议字母加数字',
+        confirmPassword: '确认密码',
+        confirmPasswordPlaceholder: '请再次输入密码',
+        nickname: '昵称',
+        nicknamePlaceholder: '选填，方便店员称呼',
+        server: '服务器'
+      },
+      login: {
+        slogan: '随时随地看看你的宠物',
+        submit: '登录',
+        noAccount: '还没有账号？',
+        register: '立即注册',
+        demo: '先看演示面板',
+        failed: '登录失败，请检查手机号与密码',
+        phoneInvalid: '请输入正确的手机号',
+        passwordRequired: '请输入密码'
+      },
+      register: {
+        title: '注册家长账号',
+        subtitle: '注册后请让门店生成绑定码，扫码即可绑定宠物设备。',
+        submit: '注册并登录',
+        haveAccount: '已有账号？',
+        login: '去登录',
+        success: '注册成功',
+        failed: '注册失败，请稍后重试',
+        passwordTooShort: '密码至少 6 位',
+        passwordMismatch: '两次输入的密码不一致'
+      },
+      pets: {
+        title: '我的宠物',
+        desc: '选择一只宠物进入实时看护面板',
+        bind: '扫码绑定',
+        empty: '还没有绑定宠物',
+        bindNow: '去绑定',
+        unknownBreed: '品种待完善',
+        boarding: '寄养第 {days} 天',
+        logout: '退出登录',
+        logoutConfirm: '确定要退出登录吗？',
+        loadFailed: '加载宠物列表失败'
+      },
+      bind: {
+        title: '绑定宠物设备',
+        subtitle: '扫描门店出示的绑定码，或手动输入绑定码完成绑定。',
+        scan: '扫码绑定',
+        scanEmpty: '未识别到绑定码，请重试或手动输入',
+        scanFailed: '当前环境不支持扫码，请手动输入绑定码',
+        manualDivider: '或手动输入绑定码',
+        code: '绑定码',
+        codePlaceholder: '请输入门店提供的绑定码',
+        submit: '确认绑定',
+        success: '绑定成功',
+        failed: '绑定失败，请检查绑定码',
+        codeRequired: '请输入绑定码',
+        back: '返回宠物列表'
+      }
+    },
     register: '注册',
     alarmsTitle: '告警信息',
     alarmDetailTitle: '告警详情',
