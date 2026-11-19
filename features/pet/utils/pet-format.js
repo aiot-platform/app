@@ -1,5 +1,6 @@
 // 宠物面板的展示格式化：统一「无回报显示 --、未知枚举显示未知」（PRD 5.1）。
-import { COMFORT_RANGE } from '../model/tsl.js'
+// 文案为单语中文，与微信小程序端（分支 pet-wxmini）保持一致。
+import { COMFORT_RANGE, ENUMS } from '../model/tsl.js'
 
 export const EMPTY_TEXT = '--'
 
@@ -15,31 +16,26 @@ export function numberText(value, digits = 0) {
 }
 
 /** 枚举文案：未知值显示「未知」，不默认选中任何一项（PRD 4.4/4.6/验收）。 */
-export function enumText(t, enumKey, value) {
+export function enumText(enumKey, value) {
   if (isMissing(value)) return EMPTY_TEXT
-  const key = `pages.pet.enums.${enumKey}.${value}`
-  const text = t(key)
-  return text === key ? t('pages.pet.enums.unknown') : text
+  const table = ENUMS[enumKey]
+  return table && table[value] !== undefined ? table[value] : ENUMS.unknown
 }
 
 /** 温度舒适度标签（PRD 4.4）。 */
-export function temperatureTagKey(value, range = COMFORT_RANGE) {
+export function temperatureTag(value, range = COMFORT_RANGE) {
   if (isMissing(value)) return ''
   const num = Number(value)
   if (!Number.isFinite(num)) return ''
-  if (num > range.max) return 'pages.pet.env.hot'
-  if (num < range.min) return 'pages.pet.env.cold'
-  return 'pages.pet.env.comfort'
+  if (num > range.max) return '偏热'
+  if (num < range.min) return '偏冷'
+  return '舒适'
 }
 
-/** Wi-Fi 信号强度分档，用于叠层图标与设备状态行。 */
-export function wifiLevel(rssi) {
-  if (isMissing(rssi)) return ''
-  const value = Number(rssi)
-  if (!Number.isFinite(value)) return ''
-  if (value >= -55) return 'strong'
-  if (value >= -70) return 'fair'
-  return 'weak'
+/** Wi-Fi 信号强度。 */
+export function wifiText(value) {
+  const num = Number(value)
+  return isMissing(value) || !Number.isFinite(num) ? EMPTY_TEXT : `${num} dBm`
 }
 
 /** 观看时长：从开始播放起按 mm:ss 计时。 */

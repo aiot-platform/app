@@ -143,12 +143,12 @@ Body:   { "device_id": "xxx" }
 
 ```
 GET  /api/v1/pet/profile?device_id=             → { pet:{name,breed,age,avatar,boarding_days}, shop:{name,open_time,close_time} }
-GET  /api/v1/pet/daily-report?device_id=&date=  → { eat_count,sleep_minutes,play_minutes,drink_count }
+GET  /api/v1/pet/daily-report?device_id=&date=  → { eat_count,sleep_hours,play_minutes,drink_count }
 GET  /api/v1/pet/staff-notes?device_id=         → [{ id,content,staff_name,create_at }]
-GET  /api/v1/pet/timeline?device_id=&limit=     → [{ id,type(eat|play|sleep|care|treat),title,create_at }]
+GET  /api/v1/pet/timeline?device_id=&limit=     → [{ id,type(eat|play|sleep|care|treat),title,time }]
 POST /api/v1/pet/timeline  { device_id, type, title }
-GET  /api/v1/pet/album?device_id=               → [{ id,url,create_at }]
-POST /api/v1/pet/album     { device_id, url, create_at }
+GET  /api/v1/pet/album?device_id=               → [{ id,url,time }]
+POST /api/v1/pet/album     { device_id, url, time }
 ```
 
 - `shop.open_time` / `close_time` 用于「店铺休息时段」封面态，未配置时视为全天开放。

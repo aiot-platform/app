@@ -1,19 +1,27 @@
 <template>
   <view class="pet-page">
-    <view v-if="loading" class="pet-page-state">{{ $t('pages.pet.loading') }}</view>
+    <template v-if="!embed">
+      <view class="pet-topbar">
+        <button class="pet-topbar-btn" :style="{ visibility: activeTab === 'live' ? 'hidden' : 'visible' }" hover-class="pet-page-pressed" @click="goBack">‹</button>
+        <text class="pet-topbar-title">{{ navTitle }}</text>
+        <button class="pet-topbar-btn" :style="{ visibility: activeTab === 'live' ? 'visible' : 'hidden' }" hover-class="pet-page-pressed" @click="onSettings">⋯</button>
+      </view>
+    </template>
+
+    <view v-if="loading" class="pet-page-state">正在加载宠物看护…</view>
     <view v-else-if="loadError" class="pet-page-state">
       <text>{{ loadError }}</text>
-      <button class="pet-page-retry" hover-class="pet-page-pressed" @click="boot">{{ $t('pages.pet.live.retry') }}</button>
+      <button class="pet-page-retry" hover-class="pet-page-pressed" @click="boot">重试</button>
     </view>
     <template v-else>
-      <view v-if="demo" class="pet-demo-badge">{{ $t('pages.pet.demoBadge') }}</view>
+      <view v-if="demo" class="pet-demo-badge">演示数据：未连接真实设备与实时通道，仅用于界面预览</view>
       <scroll-view class="pet-page-scroll" scroll-y>
         <pet-live-tab v-show="activeTab === 'live'" :device-id="deviceId" :runtime="runtime" :values="values"
           :online="online" :capabilities="capabilities" :profile="profile" :shop-open="shopOpen" :alert="alert" :demo="demo"
           @dismiss-alert="dismissAlert" @snapshot-saved="onSnapshotSaved" @treat-done="onTreatDone" />
         <pet-timeline-tab v-if="activeTab === 'timeline'" :report="report" :notes="notes" :timeline="timeline"
           :has-activity="capabilities.hasProperty('pet_activity')" />
-        <pet-album-tab v-if="activeTab === 'album'" :photos="album" />
+        <pet-album-tab v-if="activeTab === 'album'" :photos="album" :pet-name="petName" />
         <pet-more-tab v-if="activeTab === 'more'" :runtime="runtime" :values="values" :online="online" :capabilities="capabilities" />
       </scroll-view>
       <!-- App 端内嵌播放时由原生外壳负责返回，不再显示面板内导航（PRD 3.2 的入口裁减规则在 H5/App 一致生效） -->
@@ -31,8 +39,11 @@ import PetMoreTab from '@/features/pet/components/pet-more-tab.vue'
 import { createPetRuntime } from '@/features/pet/services/pet-runtime.js'
 import { createDemoRuntime } from '@/features/pet/services/pet-demo.js'
 import { buildCapabilities } from '@/features/pet/model/capabilities.js'
-import { EVENT_BY_CODE } from '@/features/pet/model/tsl.js'
+import { ENUMS } from '@/features/pet/model/tsl.js'
 import { appendAlbumPhoto, appendTimeline, bumpAlbumBadge, clearAlbumBadge, loadAlbum, loadDailyReport, loadProfile, loadStaffNotes, loadTimeline } from '@/features/pet/services/pet-platform.js'
+
+// 面板标题：首页不显示标题，其余页签与底部入口一致。
+const TAB_TITLES = { live: '', timeline: '宠物动态', album: '相册', more: '更多' }
 
 // 宠物看护面板容器：装配设备数据（物模型）+ 平台能力（本地 mock，接口待平台提供）+ 面板内导航。
 export default {
@@ -75,13 +86,15 @@ export default {
       }
       return minutes >= toMinutes(shop.openTime) && minutes <= toMinutes(shop.closeTime)
     },
+    navTitle() { return TAB_TITLES[this.activeTab] || '' },
+    petName() { return this.profile?.pet?.name || '宠物' },
     navItems() {
       const items = [
-        { key: 'live', labelKey: 'pages.pet.tabs.live' },
-        { key: 'timeline', labelKey: 'pages.pet.tabs.timeline' }
+        { key: 'live', label: '实时' },
+        { key: 'timeline', label: '动态' }
       ]
-      if (this.capabilities.hasAlbum) items.push({ key: 'album', labelKey: 'pages.pet.tabs.album', badge: this.badge })
-      if (this.capabilities.hasMore) items.push({ key: 'more', labelKey: 'pages.pet.tabs.more' })
+      if (this.capabilities.hasAlbum) items.push({ key: 'album', label: '相册', badge: this.badge })
+      if (this.capabilities.hasMore) items.push({ key: 'more', label: '更多' })
       return items
     },
     alert() {
@@ -109,7 +122,7 @@ export default {
     if (!this.deviceId) this.deviceId = this.demo ? 'demo-device' : ''
     if (!this.deviceId) {
       this.loading = false
-      this.loadError = this.$t('pages.pet.missingDevice')
+      this.loadError = '缺少设备信息，请从设备列表进入'
       return
     }
     this.boot()
@@ -137,7 +150,7 @@ export default {
           onOnline: online => { this.online = online },
           onEvents: events => { this.events = events },
           onState: state => {
-            if (state.status === 'error' && !this.runtime?.fields?.length) this.loadError = state.message || this.$t('pages.pet.loadFailed')
+            if (state.status === 'error' && !this.runtime?.fields?.length) this.loadError = state.message || '宠物看护数据加载失败'
           }
         }
         this.runtime = this.demo ? createDemoRuntime(handlers) : createPetRuntime(handlers)
@@ -146,7 +159,7 @@ export default {
         this.online = this.runtime.online
         await this.loadPlatformData()
       } catch (error) {
-        this.loadError = error?.message || this.$t('pages.pet.loadFailed')
+        this.loadError = error?.message || '宠物看护数据加载失败'
       } finally {
         this.loading = false
       }
@@ -172,36 +185,41 @@ export default {
         this.badge = 0
       }
     },
+    goBack() {
+      if (this.activeTab !== 'live') this.switchTab('live')
+    },
+    onSettings() {
+      uni.showToast({ title: '设备设置（平台通用页面）', icon: 'none' })
+    },
     dismissAlert() {
       // 关闭只隐藏提示，不代表清除设备事件（PRD 4.10）。
       this.alertDismissed = true
     },
     alertText(event) {
-      const pet = this.profile?.pet?.name || this.$t('pages.pet.profile.fallbackName')
       const data = event.data || {}
-      if (event.code === 'stream_error') return this.$t('pages.pet.alert.streamError')
-      if (event.code === 'sd_card_error') return this.$t('pages.pet.alert.sdCardError')
+      if (event.code === 'stream_error') {
+        const code = data.error_code === undefined ? 1 : data.error_code
+        return `推流异常：${ENUMS.errorCode[code] || ENUMS.unknown}`
+      }
+      if (event.code === 'sd_card_error') return '设备存储卡异常，不影响观看'
       if (event.code === 'bark_alert') {
         const db = Number(data.volume_db)
-        return Number.isFinite(db) ? this.$t('pages.pet.alert.barkAlert', { pet, db }) : this.$t('pages.pet.alert.barkAlertUnknown', { pet })
+        return Number.isFinite(db) ? `${this.petName}在叫（约 ${db} 分贝），店员正在关注` : `${this.petName}在叫，店员正在关注`
       }
       if (event.code === 'env_abnormal') {
-        const typeKey = `pages.pet.enums.abnormalType.${data.abnormal_type}`
-        const type = this.$t(typeKey) === typeKey ? this.$t('pages.pet.enums.unknown') : this.$t(typeKey)
-        const value = Number(data.value)
-        return Number.isFinite(value) ? this.$t('pages.pet.alert.envAbnormal', { type, value }) : this.$t('pages.pet.alert.envAbnormalNoValue', { type })
+        const value = data.value === undefined ? '--' : data.value
+        return `舍内温度异常（${value}℃），店员已收到通知`
       }
-      return this.$t(EVENT_BY_CODE[event.code]?.labelKey || 'pages.pet.alert.unknown')
+      return '设备出现异常'
     },
     async onSnapshotSaved() {
       // 相册存储是平台能力（接口待定）：先用本地 mock 记录，保证角标与网格闭环（PRD 4.5）。
-      await appendAlbumPhoto({ url: snapshotPlaceholder() })
+      await appendAlbumPhoto({ src: snapshotPlaceholder() })
       this.badge = bumpAlbumBadge()
       this.album = await loadAlbum(this.deviceId)
     },
     async onTreatDone() {
-      const pet = this.profile?.pet?.name || this.$t('pages.pet.profile.fallbackName')
-      await appendTimeline({ type: 'treat', title: this.$t('pages.pet.timeline.treatEntry', { pet }) })
+      await appendTimeline({ type: 'treat', text: `你给${this.petName}投喂了一份零食` })
       this.timeline = await loadTimeline(this.deviceId)
     }
   }
@@ -219,7 +237,11 @@ function snapshotPlaceholder() {
 </script>
 
 <style scoped>
-.pet-page { display: flex; flex-direction: column; height: 100vh; background: #f4f6f8; }
+.pet-page { display: flex; flex-direction: column; height: 100vh; padding-top: var(--status-bar-height); box-sizing: border-box; background: #f4f6f8; }
+.pet-topbar { flex-shrink: 0; position: relative; display: flex; align-items: center; justify-content: space-between; height: 44px; padding: 0 8px; background: #f4f6f8; }
+.pet-topbar-title { position: absolute; left: 0; right: 0; text-align: center; font-size: 16px; font-weight: 600; color: #1f2733; }
+.pet-topbar-btn { position: relative; z-index: 2; width: 40px; height: 40px; margin: 0; padding: 0; border: 0; border-radius: 20px; background: transparent; color: #1f2733; font-size: 20px; line-height: 40px; text-align: center; }
+.pet-topbar-btn::after { border: 0; }
 .pet-page-scroll { flex: 1; min-height: 0; }
 .pet-demo-badge { padding: 6px 16px; background: #fff4e8; color: #d46b08; font-size: 11px; }
 .pet-page-state { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 60vh; color: #8b96a6; font-size: 13px; }

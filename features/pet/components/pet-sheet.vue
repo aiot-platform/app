@@ -2,9 +2,9 @@
   <view v-if="visible" class="pet-sheet-mask" @click="close">
     <view class="pet-sheet" @click.stop>
       <view class="pet-sheet-head">
-        <text class="pet-sheet-cancel" @click="close">{{ $t('pages.pet.sheet.cancel') }}</text>
+        <text class="pet-sheet-cancel" @click="close">取消</text>
         <text class="pet-sheet-title">{{ title }}</text>
-        <text class="pet-sheet-confirm" :class="{ 'is-disabled': !changed }" @click="confirm">{{ $t('pages.pet.sheet.confirm') }}</text>
+        <text class="pet-sheet-confirm" :class="{ 'is-disabled': !changed }" @click="confirm">确定</text>
       </view>
       <view class="pet-sheet-body">
         <button v-for="item in options" :key="item.value" class="pet-sheet-option"

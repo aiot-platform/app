@@ -1,16 +1,18 @@
 // 平台能力数据源（PRD 2.5 / 4.11 / 4.5）：宠物档案、店铺与营业时段、日报、店员留言、时间线、相册。
-// 首版按约定用本地 mock 跑通 UI；接口就绪后只需替换本文件实现，调用方不用改。
+// 首版按约定用本地 mock 跑通 UI，字段名与演示数据与微信小程序端（分支 pet-wxmini）保持一致；
+// 接口就绪后只需替换本文件实现，调用方不用改。
 //
 // 待平台提供的接口约定（后端补齐后删除 mock 分支即可）：
 //   GET  /api/v1/pet/profile?device_id=            → { pet:{name,breed,age,avatar,boarding_days}, shop:{name,open_time,close_time} }
-//   GET  /api/v1/pet/daily-report?device_id=&date= → { eat_count,sleep_minutes,play_minutes,drink_count }
+//   GET  /api/v1/pet/daily-report?device_id=&date= → { eat_count,sleep_hours,play_minutes,drink_count }
 //   GET  /api/v1/pet/staff-notes?device_id=        → [{ id,content,staff_name,create_at }]
-//   GET  /api/v1/pet/timeline?device_id=&limit=    → [{ id,type(eat|play|sleep|care|treat),title,create_at }]
+//   GET  /api/v1/pet/timeline?device_id=&limit=    → [{ id,type(eat|play|sleep|care|treat),title,time }]
 //   POST /api/v1/pet/timeline  { device_id, type, title }
-//   GET  /api/v1/pet/album?device_id=              → [{ id,url,create_at }]
-//   POST /api/v1/pet/album     { device_id, url, create_at }
+//   GET  /api/v1/pet/album?device_id=              → [{ id,url,time }]
+//   POST /api/v1/pet/album     { device_id, url, time }
 const TIMELINE_KEY = 'pet_timeline_mock'
 const ALBUM_KEY = 'pet_album_mock'
+const BADGE_KEY = 'pet_album_badge'
 
 function readStore(key) {
   try {
@@ -30,47 +32,51 @@ function writeStore(key, list) {
   }
 }
 
-function minutesAgo(minutes) {
-  return new Date(Date.now() - minutes * 60000).toISOString()
+function nowStr() {
+  const date = new Date()
+  const pad = num => String(num).padStart(2, '0')
+  return `${pad(date.getHours())}:${pad(date.getMinutes())}`
 }
 
 /** 宠物档案与店铺信息；档案缺失时调用方只显示设备名与在线标签（PRD 4.2）。 */
 export async function loadProfile() {
   return {
-    pet: { name: '豆豆', breed: '柯基', age: '2 岁', avatar: '', boardingDays: 3 },
-    shop: { name: '暖橙宠物生活馆', openTime: '08:00', closeTime: '21:00' }
+    pet: { name: '奶糕', breed: '金毛', age: '2岁', avatar: '', boardingDays: 3 },
+    shop: { name: '暖暖宠物之家', openTime: '08:00', closeTime: '21:00' }
   }
 }
 
 /** 今日日报；pet_activity 不存在时调用方隐藏日报卡（PRD 4.11）。 */
 export async function loadDailyReport() {
-  return { eatCount: 3, sleepMinutes: 268, playMinutes: 45, drinkCount: 4 }
+  return { eatCount: 2, sleepHours: 5.5, playMinutes: 48, drinkCount: 6 }
 }
 
 /** 店员留言；无留言返回空数组，调用方隐藏卡片。 */
 export async function loadStaffNotes() {
-  return [
-    { id: 'note-1', staffName: '小雨', content: '上午带它晒了 20 分钟太阳，精神很好。', createAt: minutesAgo(150) },
-    { id: 'note-2', staffName: '阿凯', content: '午饭吃完了，下午有点困，一直在窝里睡。', createAt: minutesAgo(80) }
-  ]
+  return [{
+    id: 'note-1',
+    staffName: '店员小林',
+    content: '奶糕今天特别乖，中午把狗粮吃得干干净净，下午和我玩了接球，现在在窝里睡得很香～',
+    time: '10 分钟前'
+  }]
 }
 
-/** 时间线（倒序），本地新增的投喂记录合并展示（PRD 4.6）。 */
+/** 时间线（正序存储，页面倒序展示；PRD 4.6）。 */
 export async function loadTimeline() {
   const local = readStore(TIMELINE_KEY)
   const seeded = [
-    { id: 'tl-1', type: 'eat', title: '吃了一份午餐', createAt: minutesAgo(180) },
-    { id: 'tl-2', type: 'play', title: '在活动区和球玩了 15 分钟', createAt: minutesAgo(120) },
-    { id: 'tl-3', type: 'sleep', title: '午睡 1 小时', createAt: minutesAgo(70) },
-    { id: 'tl-4', type: 'care', title: '店员梳理了毛发', createAt: minutesAgo(35) }
+    { id: 'tl-1', type: 'eat', text: '奶糕吃完了早餐，干饭很香', time: '09:10' },
+    { id: 'tl-2', type: 'play', text: '和店员小林玩接球 20 分钟', time: '10:30' },
+    { id: 'tl-3', type: 'sleep', text: '午睡开始', time: '11:40' },
+    { id: 'tl-4', type: 'care', text: '完成梳毛护理，毛毛蓬松啦', time: '13:20' }
   ]
-  return [...local, ...seeded].sort((a, b) => new Date(b.createAt) - new Date(a.createAt))
+  return [...seeded, ...local]
 }
 
 export async function appendTimeline(entry) {
   const local = readStore(TIMELINE_KEY)
-  const record = { id: `tl-local-${Date.now()}`, createAt: new Date().toISOString(), ...entry }
-  writeStore(TIMELINE_KEY, [record, ...local])
+  const record = { id: `tl-local-${Date.now()}`, time: nowStr(), ...entry }
+  writeStore(TIMELINE_KEY, [...local, record])
   return record
 }
 
@@ -81,26 +87,22 @@ export async function loadAlbum() {
 
 export async function appendAlbumPhoto(photo) {
   const list = readStore(ALBUM_KEY)
-  const record = { id: `photo-${Date.now()}`, createAt: new Date().toISOString(), ...photo }
+  const record = { id: `photo-${Date.now()}`, time: nowStr(), ...photo }
   writeStore(ALBUM_KEY, [record, ...list])
   return record
 }
 
 export function clearAlbumBadge() {
-  try { uni.setStorageSync('pet_album_badge', 0) } catch (error) { console.warn('[pet] 角标清零失败', error) }
+  try { uni.setStorageSync(BADGE_KEY, 0) } catch (error) { console.warn('[pet] 角标清零失败', error) }
 }
 
 export function bumpAlbumBadge() {
   try {
-    const next = Number(uni.getStorageSync('pet_album_badge') || 0) + 1
-    uni.setStorageSync('pet_album_badge', next)
+    const next = Number(uni.getStorageSync(BADGE_KEY) || 0) + 1
+    uni.setStorageSync(BADGE_KEY, next)
     return next
   } catch (error) {
     console.warn('[pet] 角标累加失败', error)
     return 0
   }
-}
-
-export function readAlbumBadge() {
-  try { return Number(uni.getStorageSync('pet_album_badge') || 0) } catch { return 0 }
 }

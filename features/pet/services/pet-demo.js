@@ -9,16 +9,16 @@ const INITIAL_VALUES = {
   av_status: 0,
   video_quality: 3,
   mic_switch: 1,
-  speaker_volume: 40,
+  speaker_volume: 60,
   night_vision: 0,
   image_flip: 0,
   viewer_count: 0,
-  wifi_rssi: -58,
+  wifi_rssi: -52,
   sd_status: 1,
   pet_activity: 3,
-  activity_level: 62,
+  activity_level: 72,
   env_temperature: 26.5,
-  env_humidity: 54,
+  env_humidity: 55,
   treat_left: 2,
   is_online: 1
 }
@@ -33,7 +33,7 @@ export function createDemoRuntime({ onValues, onOnline, onEvents, onState }) {
   // 用物模型直接造出模型行，能力层与真实设备走同一条判断路径（含枚举裁剪）。
   const propertyRows = PROPERTIES.map(item => ({
     key: item.code,
-    name: item.labelKey,
+    name: item.code,
     specs: item.enumKey ? Object.fromEntries((item.values || []).map(value => [value, value])) : undefined
   }))
   const fields = [

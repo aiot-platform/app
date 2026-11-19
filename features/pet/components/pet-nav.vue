@@ -4,7 +4,7 @@
       :aria-selected="item.key === active" :style="{ color: item.key === active ? activeColor : inactiveColor }"
       hover-class="pet-nav-pressed" @click="$emit('change', item.key)">
       <text class="pet-nav-badge" v-if="item.badge">{{ item.badge > 99 ? '99+' : item.badge }}</text>
-      <text class="pet-nav-label">{{ $t(item.labelKey) }}</text>
+      <text class="pet-nav-label">{{ item.label }}</text>
     </button>
   </view>
 </template>

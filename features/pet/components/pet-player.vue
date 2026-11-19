@@ -17,18 +17,21 @@
           <view class="pet-player-live"><text class="pet-player-dot" />LIVE<text class="pet-player-duration">{{ duration }}</text></view>
           <view class="pet-player-meta">
             <text v-if="viewerText">{{ viewerText }}</text>
-            <text v-if="wifiText">{{ wifiText }}</text>
+            <text v-if="wifiText">Wi-Fi {{ wifiText }}</text>
           </view>
         </view>
         <view v-if="activityText" class="pet-player-bubble"><text>{{ activityText }}</text></view>
         <view class="pet-player-bar">
-          <button class="pet-player-action" hover-class="pet-player-pressed" @click="$emit('toggle-mute')">{{ muted ? $t('pages.pet.player.unmute') : $t('pages.pet.player.mute') }}</button>
+          <button class="pet-player-action" hover-class="pet-player-pressed" @click="$emit('toggle-mute')">{{ muted ? '取消静音' : '静音' }}</button>
+          <view v-if="showLevels" class="pet-player-levels">
+            <text v-for="(level, index) in levels" :key="index" class="pet-player-level" :style="{ height: level + 'px' }" />
+          </view>
+          <text v-else-if="micShow" class="pet-player-note">店内收音已关</text>
           <button v-if="quality.openable" class="pet-player-action" hover-class="pet-player-pressed" @click="$emit('open-quality')">{{ quality.label }}</button>
           <text v-else-if="quality.label" class="pet-player-action pet-player-action--static">{{ quality.label }}</text>
-          <button v-if="showIntercom" class="pet-player-action" :class="{ 'pet-player-action--on': talking }" hover-class="pet-player-pressed" @click="$emit('toggle-talk')">{{ $t('pages.pet.player.talk') }}</button>
-          <button v-if="showSnapshot" class="pet-player-action" hover-class="pet-player-pressed" @click="$emit('snapshot')">{{ $t('pages.pet.player.snapshot') }}</button>
-          <button class="pet-player-action" hover-class="pet-player-pressed" @click="$emit('fullscreen')">{{ fullscreen ? $t('pages.pet.player.exitFullscreen') : $t('pages.pet.player.fullscreen') }}</button>
-          <button class="pet-player-action pet-player-action--stop" hover-class="pet-player-pressed" @click="$emit('stop')">{{ $t('pages.pet.player.stop') }}</button>
+          <button v-if="showIntercom" class="pet-player-action" :class="{ 'pet-player-action--on': talking }" hover-class="pet-player-pressed" @click="$emit('toggle-talk')">对讲</button>
+          <button class="pet-player-action" hover-class="pet-player-pressed" @click="$emit('fullscreen')">{{ fullscreen ? '退出全屏' : '全屏' }}</button>
+          <button class="pet-player-action pet-player-action--stop" hover-class="pet-player-pressed" @click="$emit('stop')">停止</button>
         </view>
       </template>
     </view>
@@ -52,18 +55,23 @@ export default {
     muted: { type: Boolean, default: false },
     talking: { type: Boolean, default: false },
     showIntercom: { type: Boolean, default: false },
-    showSnapshot: { type: Boolean, default: false },
+    micShow: { type: Boolean, default: false },
+    micOn: { type: Boolean, default: false },
     fullscreen: { type: Boolean, default: false },
     demo: { type: Boolean, default: false },
     quality: { type: Object, default: () => ({ openable: false, label: '' }) }
   },
-  emits: ['start', 'retry', 'stop', 'toggle-mute', 'toggle-talk', 'open-quality', 'snapshot', 'fullscreen'],
+  emits: ['start', 'retry', 'stop', 'toggle-mute', 'toggle-talk', 'open-quality', 'fullscreen'],
   data() {
-    return { now: Date.now(), ticker: null }
+    return { now: Date.now(), ticker: null, levels: [6, 10, 4, 12, 7] }
   },
   computed: {
     duration() {
       return durationText(this.startedAt, this.now)
+    },
+    // 店内收音开启且未被客户端静音时，展示拾音电平（数据来自设备回报，这里只做视觉节奏）。
+    showLevels() {
+      return this.micShow && this.micOn && !this.muted
     }
   },
   watch: {
@@ -86,7 +94,11 @@ export default {
     startTicker() {
       this.stopTicker()
       this.now = Date.now()
-      this.ticker = setInterval(() => { this.now = Date.now() }, 1000)
+      this.levels = this.levels.map(() => 3 + Math.round(Math.random() * 13))
+      this.ticker = setInterval(() => {
+        this.now = Date.now()
+        this.levels = this.levels.map(() => 3 + Math.round(Math.random() * 13))
+      }, 1000)
     },
     stopTicker() {
       if (this.ticker) clearInterval(this.ticker)
@@ -123,5 +135,8 @@ export default {
 .pet-player-action--on { background: rgba(255, 138, 61, .85); }
 .pet-player-action--stop { color: #ffb3b3; }
 .pet-player-action--static { opacity: .85; }
+.pet-player-levels { display: flex; gap: 2px; align-items: flex-end; height: 16px; margin: 0 4px; }
+.pet-player-level { display: block; width: 3px; border-radius: 2px; background: #ffd9b8; }
+.pet-player-note { margin: 0 6px; color: rgba(255, 255, 255, .9); font-size: 11px; }
 .pet-player-pressed { opacity: .6; }
 </style>

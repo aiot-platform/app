@@ -1,31 +1,31 @@
 <template>
   <view class="pet-timeline">
     <view v-if="showReport" class="pet-block">
-      <text class="pet-block-title">{{ $t('pages.pet.timeline.reportTitle') }}</text>
+      <text class="pet-block-title">今日日报</text>
       <view class="pet-report">
-        <view class="pet-report-item"><text class="pet-report-value">{{ reportText(report.eatCount, 0) }}</text><text class="pet-report-label">{{ $t('pages.pet.timeline.eat') }}</text></view>
-        <view class="pet-report-item"><text class="pet-report-value">{{ reportText(report.sleepMinutes, 0) }}</text><text class="pet-report-label">{{ $t('pages.pet.timeline.sleep') }}</text></view>
-        <view class="pet-report-item"><text class="pet-report-value">{{ reportText(report.playMinutes, 0) }}</text><text class="pet-report-label">{{ $t('pages.pet.timeline.play') }}</text></view>
-        <view class="pet-report-item"><text class="pet-report-value">{{ reportText(report.drinkCount, 0) }}</text><text class="pet-report-label">{{ $t('pages.pet.timeline.drink') }}</text></view>
+        <view class="pet-report-item"><text class="pet-report-value">{{ reportText(report.eatCount, 0) }}</text><text class="pet-report-label">进食(次)</text></view>
+        <view class="pet-report-item"><text class="pet-report-value">{{ reportText(report.sleepHours, 1) }}</text><text class="pet-report-label">睡眠(小时)</text></view>
+        <view class="pet-report-item"><text class="pet-report-value">{{ reportText(report.playMinutes, 0) }}</text><text class="pet-report-label">玩耍(分钟)</text></view>
+        <view class="pet-report-item"><text class="pet-report-value">{{ reportText(report.drinkCount, 0) }}</text><text class="pet-report-label">喝水(次)</text></view>
       </view>
     </view>
 
     <view v-if="notes.length" class="pet-block">
-      <text class="pet-block-title">{{ $t('pages.pet.timeline.notesTitle') }}</text>
+      <text class="pet-block-title">店员留言</text>
       <view v-for="note in notes" :key="note.id" class="pet-note">
-        <text class="pet-note-head">{{ note.staffName }} · {{ timeText(note.createAt) }}</text>
+        <text class="pet-note-head">{{ note.staffName }} · {{ note.time }}</text>
         <text class="pet-note-body">{{ note.content }}</text>
       </view>
     </view>
 
     <view class="pet-block">
-      <text class="pet-block-title">{{ $t('pages.pet.timeline.timelineTitle') }}</text>
-      <view v-if="!timeline.length" class="pet-empty">{{ $t('pages.pet.timeline.empty') }}</view>
-      <view v-for="item in timeline" :key="item.id" class="pet-timeline-item">
+      <text class="pet-block-title">今日动态</text>
+      <view v-if="!displayTimeline.length" class="pet-empty">今天还没有动态</view>
+      <view v-for="item in displayTimeline" :key="item.id" class="pet-timeline-item">
         <text class="pet-timeline-dot" :class="'pet-timeline-dot--' + item.type" />
         <view class="pet-timeline-text">
-          <text class="pet-timeline-title">{{ item.title }}</text>
-          <text class="pet-timeline-time">{{ timeText(item.createAt) }}</text>
+          <text class="pet-timeline-title">{{ item.text }}</text>
+          <text class="pet-timeline-time">{{ item.time }}</text>
         </view>
       </view>
     </view>
@@ -43,20 +43,15 @@ export default {
     hasActivity: { type: Boolean, default: false }
   },
   computed: {
-    showReport() { return this.hasActivity }
+    showReport() { return this.hasActivity },
+    // 时间线按正序存储、倒序展示（PRD 4.6）。
+    displayTimeline() { return [...this.timeline].reverse() }
   },
   methods: {
     reportText(value, digits) {
       if (value === undefined || value === null || value === '') return '--'
       const num = Number(value)
       return Number.isFinite(num) ? num.toFixed(digits) : '--'
-    },
-    timeText(value) {
-      if (!value) return ''
-      const date = new Date(value)
-      if (Number.isNaN(date.getTime())) return ''
-      const pad = num => String(num).padStart(2, '0')
-      return `${pad(date.getMonth() + 1)}-${pad(date.getDate())} ${pad(date.getHours())}:${pad(date.getMinutes())}`
     }
   }
 }

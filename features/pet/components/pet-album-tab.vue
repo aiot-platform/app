@@ -1,19 +1,19 @@
 <template>
   <view class="pet-album">
     <view v-if="!photos.length" class="pet-album-empty">
-      <text class="pet-album-empty-title">{{ $t('pages.pet.album.emptyTitle') }}</text>
-      <text class="pet-album-empty-hint">{{ $t('pages.pet.album.emptyHint') }}</text>
+      <text class="pet-album-empty-title">还没有照片</text>
+      <text class="pet-album-empty-hint">观看实时流时点“抓拍”，留住{{ petName }}的可爱瞬间</text>
     </view>
     <view v-else class="pet-album-grid">
       <view v-for="photo in photos" :key="photo.id" class="pet-album-cell" @click="preview = photo">
-        <image class="pet-album-image" :src="photo.url" mode="aspectFill" />
-        <text class="pet-album-time">{{ timeText(photo.createAt) }}</text>
+        <image class="pet-album-image" :src="photo.src" mode="aspectFill" />
+        <text class="pet-album-time">{{ photo.time }}</text>
       </view>
     </view>
 
     <view v-if="preview" class="pet-album-viewer" @click="preview = null">
-      <image class="pet-album-viewer-image" :src="preview.url" mode="aspectFit" />
-      <text class="pet-album-viewer-time">{{ timeText(preview.createAt) }}</text>
+      <image class="pet-album-viewer-image" :src="preview.src" mode="aspectFit" />
+      <text class="pet-album-viewer-time">{{ preview.time }}</text>
     </view>
   </view>
 </template>
@@ -22,18 +22,12 @@
 // 相册页：双列网格 + 大图浮层 + 空态（PRD 4.5）。
 export default {
   name: 'PetAlbumTab',
-  props: { photos: { type: Array, default: () => [] } },
+  props: {
+    photos: { type: Array, default: () => [] },
+    petName: { type: String, default: '宠物' }
+  },
   data() {
     return { preview: null }
-  },
-  methods: {
-    timeText(value) {
-      if (!value) return ''
-      const date = new Date(value)
-      if (Number.isNaN(date.getTime())) return ''
-      const pad = num => String(num).padStart(2, '0')
-      return `${pad(date.getMonth() + 1)}-${pad(date.getDate())} ${pad(date.getHours())}:${pad(date.getMinutes())}`
-    }
   }
 }
 </script>

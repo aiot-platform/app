@@ -1,6 +1,6 @@
 <template>
   <view class="pet-live">
-    <pet-alert-bar v-if="alert" :alert="alert" :count-text="$t('pages.pet.alert.count', { count: alert.count })" @dismiss="$emit('dismiss-alert')" />
+    <pet-alert-bar v-if="alert" :alert="alert" :count-text="alert.count > 1 ? `（共 ${alert.count} 条）` : ''" @dismiss="$emit('dismiss-alert')" />
 
     <view class="pet-profile">
       <image v-if="profile?.pet?.avatar" class="pet-profile-avatar" :src="profile.pet.avatar" mode="aspectFill" />
@@ -8,7 +8,7 @@
       <view class="pet-profile-main">
         <view class="pet-profile-line">
           <text class="pet-profile-name">{{ title }}</text>
-          <text class="pet-profile-status" :class="{ 'pet-profile-status--offline': !isOnline }">{{ isOnline ? $t('pages.pet.profile.online') : $t('pages.pet.profile.offline') }}</text>
+          <text class="pet-profile-status" :class="{ 'pet-profile-status--offline': !isOnline }">{{ isOnline ? '在线' : '离线' }}</text>
         </view>
         <text v-if="subtitle" class="pet-profile-sub">{{ subtitle }}</text>
       </view>
@@ -17,16 +17,16 @@
     <pet-player :container-id="containerId" :status="status" :cover="cover" :started-at="startedAt"
       :viewer-text="viewerText" :wifi-text="wifiText" :activity-text="bubbleText" :webview-url="webviewUrl"
       :muted="muted" :talking="talking" :fullscreen="fullscreen" :demo="demo" :show-intercom="capabilities.hasProperty('mic_switch')"
-      :show-snapshot="capabilities.hasService('snapshot')" :quality="qualityDisplay"
+      :mic-show="capabilities.hasProperty('mic_switch')" :mic-on="micOn" :quality="qualityDisplay"
       @start="startLive" @retry="startLive" @stop="stopLive" @toggle-mute="toggleMute" @toggle-talk="toggleTalk"
-      @open-quality="openQuality" @snapshot="takeSnapshot" @fullscreen="fullscreen = !fullscreen" />
+      @open-quality="openQuality" @fullscreen="fullscreen = !fullscreen" />
 
     <view v-if="showStatusCard" class="pet-card">
       <view v-if="capabilities.hasProperty('pet_activity')" class="pet-card-activity">
         <text class="pet-card-icon">{{ activityIcon }}</text>
         <view class="pet-card-activity-text">
           <text class="pet-card-title">{{ activityText }}</text>
-          <text v-if="!isOnline" class="pet-card-note">{{ $t('pages.pet.status.offlineNote') }}</text>
+          <text v-if="!isOnline" class="pet-card-note">设备离线，显示最后一次状态</text>
         </view>
       </view>
       <view v-if="capabilities.hasProperty('activity_level')" class="pet-card-ring">
@@ -37,12 +37,12 @@
 
     <view v-if="showEnvRow" class="pet-env">
       <view v-if="capabilities.hasProperty('env_temperature')" class="pet-env-item">
-        <text class="pet-env-label">{{ $t('pages.pet.props.envTemperature') }}</text>
+        <text class="pet-env-label">舍内温度</text>
         <text class="pet-env-value">{{ temperatureText }}</text>
-        <text v-if="temperatureTag" class="pet-env-tag">{{ $t(temperatureTag) }}</text>
+        <text v-if="temperatureTag" class="pet-env-tag">{{ temperatureTag }}</text>
       </view>
       <view v-if="capabilities.hasProperty('env_humidity')" class="pet-env-item">
-        <text class="pet-env-label">{{ $t('pages.pet.props.envHumidity') }}</text>
+        <text class="pet-env-label">舍内湿度</text>
         <text class="pet-env-value">{{ humidityText }}</text>
       </view>
     </view>
@@ -50,22 +50,20 @@
     <view v-if="showQuickActions" class="pet-quick">
       <button v-if="capabilities.hasService('snapshot')" class="pet-quick-item" :disabled="status !== 'live' || !isOnline"
         hover-class="pet-quick-pressed" @click="takeSnapshot">
-        <text class="pet-quick-title">{{ $t('pages.pet.quick.snapshot') }}</text>
-        <text class="pet-quick-sub">{{ $t('pages.pet.quick.snapshotHint') }}</text>
+        <text class="pet-quick-title">抓拍</text>
       </button>
       <button v-if="capabilities.hasService('dispense_treat')" class="pet-quick-item" :disabled="!isOnline || treating || treatExhausted"
         hover-class="pet-quick-pressed" @click="dispenseTreat">
-        <text class="pet-quick-title">{{ treating ? $t('pages.pet.quick.treating') : $t('pages.pet.quick.treat') }}</text>
+        <text class="pet-quick-title">{{ treating ? '投喂中…' : '投喂零食' }}</text>
         <text v-if="treatHint" class="pet-quick-sub">{{ treatHint }}</text>
       </button>
       <button class="pet-quick-item" :disabled="status !== 'live' || !isOnline"
         hover-class="pet-quick-pressed" @click="toggleTalk">
-        <text class="pet-quick-title">{{ $t('pages.pet.quick.talk') }}</text>
-        <text class="pet-quick-sub">{{ talking ? $t('pages.pet.quick.talking') : $t('pages.pet.quick.talkHint') }}</text>
+        <text class="pet-quick-title">{{ talking ? '结束对讲' : '和它说话' }}</text>
       </button>
     </view>
 
-    <pet-sheet :visible="qualitySheet" :title="$t('pages.pet.props.videoQuality')" :options="qualityOptions"
+    <pet-sheet :visible="qualitySheet" title="选择画质" :options="qualityOptions"
       :model-value="qualityValue" @close="qualitySheet = false" @confirm="applyQuality" />
   </view>
 </template>
@@ -78,7 +76,7 @@ import { createRtcSession, buildEmbedUrl } from '../services/rtc/index.js'
 import { fetchRtcAuth } from '../services/rtc/token.js'
 import { createDemoRtcSession } from '../services/pet-demo.js'
 import { COMFORT_RANGE } from '../model/tsl.js'
-import { enumText, numberText, ringSource, temperatureTagKey, wifiLevel } from '../utils/pet-format.js'
+import { enumText, numberText, ringSource, temperatureTag, wifiText } from '../utils/pet-format.js'
 
 const ACTIVITY_ICONS = { 0: '🔍', 1: '🛋️', 2: '😴', 3: '🎾', 4: '🍚', 5: '💧' }
 
@@ -102,7 +100,7 @@ export default {
     return {
       containerId: `pet-player-${Math.random().toString(36).slice(2, 9)}`,
       status: 'idle',
-      errorKey: '',
+      errorText: '',
       muted: false,
       talking: false,
       treating: false,
@@ -119,7 +117,7 @@ export default {
     petActivity() { return this.number(this.values.pet_activity) },
     activityLevel() { return this.number(this.values.activity_level) },
     isOnline() { return this.online === true },
-    title() { return this.profile?.pet?.name || this.$t('pages.pet.profile.fallbackName') },
+    title() { return this.profile?.pet?.name || '宠物' },
     petInitial() { return String(this.title).slice(0, 1) },
     subtitle() {
       const parts = []
@@ -127,43 +125,46 @@ export default {
       if (pet?.breed || pet?.age) parts.push([pet.breed, pet.age].filter(Boolean).join(' · '))
       const shop = this.profile?.shop
       if (shop?.name) parts.push(shop.name)
-      if (pet?.boardingDays) parts.push(this.$t('pages.pet.profile.boarding', { days: pet.boardingDays }))
+      if (pet?.boardingDays) parts.push(`寄养第 ${pet.boardingDays} 天`)
       return parts.join(' · ')
     },
     cover() {
       const pet = this.title
-      if (!this.isOnline) return { text: this.$t('pages.pet.live.offline', { pet }), hint: '', action: this.$t('pages.pet.live.start'), disabled: true }
-      if (!this.shopOpen) return { text: this.$t('pages.pet.live.resting'), hint: this.restHint, action: this.$t('pages.pet.live.start'), disabled: true }
-      if (this.status === 'connecting') return { text: this.$t('pages.pet.live.connecting', { shop: this.profile?.shop?.name || '' }), hint: '', action: this.$t('pages.pet.live.start'), disabled: true }
-      if (this.errorKey) return { text: this.$t(this.errorKey), hint: '', action: this.$t('pages.pet.live.retry'), disabled: false, retry: true }
-      if (this.avStatus === 3) return { text: this.$t('pages.pet.live.abnormal'), hint: '', action: this.$t('pages.pet.live.retry'), disabled: false, retry: true }
-      if (this.avStatus === 1 || this.avStatus === 2) return { text: this.$t('pages.pet.live.streaming', { pet }), hint: '', action: this.$t('pages.pet.live.watch'), disabled: false }
-      return { text: this.$t('pages.pet.live.cover', { pet }), hint: '', action: this.$t('pages.pet.live.start'), disabled: false }
+      if (!this.isOnline) return { text: `设备离线，暂时看不到${pet}`, hint: '', action: '实时流', disabled: true }
+      if (!this.shopOpen) return { text: '店铺休息时段，暂不开放实时画面', hint: this.restHint, action: '实时流', disabled: true }
+      if (this.status === 'connecting') return { text: `正在连接${this.profile?.shop?.name || ''}的摄像头…`, hint: '', action: '实时流', disabled: true }
+      if (this.errorText) return { text: this.errorText, hint: '', action: '重试', disabled: false, retry: true }
+      if (this.avStatus === 3) return { text: '设备推流异常，暂时无法播放', hint: '', action: '重试', disabled: false, retry: true }
+      if (this.avStatus === 1 || this.avStatus === 2) return { text: '摄像头正在推流，点击观看', hint: '', action: '实时流', disabled: false }
+      return { text: `看看${pet}在店里的样子`, hint: '', action: '实时流', disabled: false }
     },
     restHint() {
       const shop = this.profile?.shop
-      return shop?.openTime && shop?.closeTime ? this.$t('pages.pet.live.restHint', { open: shop.openTime, close: shop.closeTime }) : ''
+      return shop?.openTime && shop?.closeTime ? `开放时间 ${shop.openTime}–${shop.closeTime}` : ''
     },
     viewerText() {
       if (!this.capabilities.hasProperty('viewer_count')) return ''
       const count = this.number(this.values.viewer_count)
-      return count === null ? this.$t('pages.pet.player.viewersEmpty') : this.$t('pages.pet.player.viewers', { count })
+      return count === null ? '--' : `${count} 人在看`
     },
     wifiText() {
       if (!this.capabilities.hasProperty('wifi_rssi')) return ''
-      const level = wifiLevel(this.values.wifi_rssi)
-      return level ? this.$t(`pages.pet.player.wifi.${level}`) : this.$t('pages.pet.player.wifiEmpty')
+      return wifiText(this.values.wifi_rssi)
+    },
+    micOn() {
+      if (!this.capabilities.hasProperty('mic_switch')) return false
+      const value = this.values.mic_switch
+      return value === 1 || value === true
     },
     activityText() {
       if (!this.capabilities.hasProperty('pet_activity')) return ''
-      const activity = enumText(this.$t.bind(this), 'petActivity', this.petActivity)
-      // 未检测到宠物时直接给结论，不套「正在…」的句式（PRD 4.3）。
-      if (this.petActivity === 0) return activity
-      return this.$t('pages.pet.status.activity', { activity })
+      return enumText('petActivity', this.petActivity)
     },
     bubbleText() {
       if (!this.capabilities.hasProperty('pet_activity') || this.avStatus === 0) return ''
-      return enumText(this.$t.bind(this), 'petActivity', this.petActivity)
+      const activity = enumText('petActivity', this.petActivity)
+      // 未检测到宠物时直接给结论，不套「宠物名 + 状态」的句式（PRD 4.3）。
+      return this.petActivity === 0 ? activity : `${this.title}${activity}`
     },
     activityIcon() {
       return ACTIVITY_ICONS[this.petActivity] || '❔'
@@ -183,28 +184,27 @@ export default {
     },
     temperatureText() {
       const value = this.number(this.values.env_temperature)
-      return value === null ? '--' : `${numberText(value, 1)}${this.$t('pages.pet.env.temperatureUnit')}`
+      return value === null ? '--' : `${numberText(value, 1)}℃`
     },
     humidityText() {
       const value = this.number(this.values.env_humidity)
-      return value === null ? '--' : `${numberText(value, 0)}${this.$t('pages.pet.env.humidityUnit')}`
+      return value === null ? '--' : `${numberText(value, 0)}%`
     },
-    temperatureTag() { return temperatureTagKey(this.values.env_temperature, this.comfortRange) },
+    temperatureTag() { return temperatureTag(this.values.env_temperature, this.comfortRange) },
     treatLeft() { return this.number(this.values.treat_left) },
     treatExhausted() { return this.treatLeft !== null && this.treatLeft <= 0 },
     treatHint() {
       if (this.treatLeft === null) return ''
-      return this.treatLeft <= 0 ? this.$t('pages.pet.quick.treatEmpty') : this.$t('pages.pet.quick.treatLeft', { count: this.treatLeft })
+      return this.treatLeft <= 0 ? '今日已投完' : `今日还可 ${this.treatLeft} 次`
     },
     qualityValue() { return this.number(this.values.video_quality) },
     qualityOptions() {
-      return this.capabilities.enumValues('video_quality').map(value => ({ value, label: enumText(this.$t.bind(this), 'videoQuality', value) }))
+      return this.capabilities.enumValues('video_quality').map(value => ({ value, label: enumText('videoQuality', value) }))
     },
     qualityDisplay() {
       if (!this.capabilities.hasProperty('video_quality')) return { openable: false, label: '' }
-      const label = enumText(this.$t.bind(this), 'videoQuality', this.qualityValue)
       // 仅剩一项时不弹层，只提示当前支持项（PRD 4.8 / 验收）。
-      return { openable: this.qualityOptions.length > 1, label }
+      return { openable: this.qualityOptions.length > 1, label: enumText('videoQuality', this.qualityValue) }
     },
     showQuickActions() {
       return this.capabilities.hasService('snapshot') || this.capabilities.hasService('dispense_treat') ||
@@ -232,7 +232,6 @@ export default {
       const num = Number(value)
       return Number.isFinite(num) ? num : null
     },
-    noop() {},
     ensureSession() {
       if (!this.session) {
         if (this.demo) {
@@ -253,7 +252,7 @@ export default {
     },
     async startLive() {
       if (!this.isOnline || !this.shopOpen || this.status === 'connecting') return
-      this.errorKey = ''
+      this.errorText = ''
       this.status = 'connecting'
       try {
         const session = this.ensureSession()
@@ -261,9 +260,9 @@ export default {
         const result = await this.callWithTimeout(
           this.runtime.callService('start_live', { quality: this.qualityValue || 3 }), this.runtime.timeout.service
         )
-        if (result === 1) throw this.fail('pages.pet.live.errDeviceBusy')
-        if (result === 2) throw this.fail('pages.pet.live.errViewerFull')
-        if (result === 3) throw this.fail('pages.pet.live.errNoSignal')
+        if (result === 1) throw this.fail('设备忙，请稍后重试')
+        if (result === 2) throw this.fail('观看人数已满（上限 4 人）')
+        if (result === 3) throw this.fail('摄像头无信号')
         // 以设备回报为准：av_status 进入推流中/对讲中才展示画面（PRD 4.1）。
         await this.runtime.waitForValue('av_status', value => Number(value) === 1 || Number(value) === 2, this.runtime.timeout.service)
         if (this.demo) await session.join()
@@ -272,7 +271,7 @@ export default {
         this.status = 'live'
       } catch (error) {
         this.status = 'idle'
-        this.errorKey = error?.messageKey || (error?.code === 'TIMEOUT' ? 'pages.pet.live.errTimeout' : 'pages.pet.live.errRtc')
+        this.errorText = error?.message || (error?.code === 'TIMEOUT' ? '连接超时，请检查网络后重试' : '实时流连接失败，请重试')
       }
     },
     async stopLive() {
@@ -294,9 +293,9 @@ export default {
       this.webviewUrl = ''
       if (session) await session.leave()
     },
-    fail(messageKey) {
-      const error = new Error(messageKey)
-      error.messageKey = messageKey
+    fail(message) {
+      const error = new Error(message)
+      error.messageKey = message
       return error
     },
     callWithTimeout(promise, timeout) {
@@ -321,7 +320,6 @@ export default {
         else await this.session?.stopTalk()
         this.talking = next
       } catch (error) {
-        this.fail()
         console.warn('[pet] 对讲切换失败', error)
       }
     },
@@ -335,25 +333,25 @@ export default {
       try {
         await this.callWithTimeout(this.runtime.writeProperty('video_quality', value), this.runtime.timeout.write)
       } catch (error) {
-        toast(this.$t('pages.pet.setting.failed'))
+        toast('设置失败，已恢复设备当前值')
         return
       }
       // 旧回包不覆盖新操作：只在设备回报与本次提交不一致时由 runtime 的 values 自然纠正。
-      if (previous !== value) toast(this.$t('pages.pet.setting.submitted'))
+      if (previous !== value) toast('已提交，等待设备回报')
     },
     async takeSnapshot() {
       if (this.status !== 'live' || !this.isOnline) {
-        toast(this.$t('pages.pet.quick.snapshotNeedLive'))
+        toast('先点实时流，再抓拍哦')
         return
       }
       try {
         const result = await this.callWithTimeout(this.runtime.callService('snapshot', {}), this.runtime.timeout.service)
-        if (result === 1) { toast(this.$t('pages.pet.quick.snapshotNeedLive')); return }
-        if (result === 2) { toast(this.$t('pages.pet.quick.snapshotFailed')); return }
-        toast(this.$t('pages.pet.quick.snapshotSaved'))
+        if (result === 1) { toast('先点实时流，再抓拍哦'); return }
+        if (result === 2) { toast('抓拍失败，请稍后重试'); return }
+        toast('已抓拍，保存到相册')
         this.$emit('snapshot-saved')
       } catch (error) {
-        toast(this.$t('pages.pet.quick.snapshotFailed'))
+        toast('抓拍失败，请稍后重试')
       }
     },
     async dispenseTreat() {
@@ -361,15 +359,14 @@ export default {
       this.treating = true
       try {
         const result = await this.callWithTimeout(this.runtime.callService('dispense_treat', {}), this.runtime.timeout.service)
-        if (result === 1) toast(this.$t('pages.pet.quick.treatEmpty'))
-        else if (result === 2) toast(this.$t('pages.pet.deviceBusy'))
-        else if (result === 3) toast(this.$t('pages.pet.quick.treatNoStock'))
+        if (result === 1) toast('今日零食已投喂完')
+        else if (result === 2 || result === 3) toast('设备忙，请稍后再试')
         else {
-          toast(this.$t('pages.pet.quick.treatDone', { pet: this.title }))
+          toast(`${this.title}收到零食啦～`)
           this.$emit('treat-done')
         }
       } catch (error) {
-        toast(this.$t('pages.pet.setting.failed'))
+        toast('投喂失败，请稍后再试')
       } finally {
         this.treating = false
       }
