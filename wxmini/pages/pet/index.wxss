@@ -357,3 +357,14 @@
   opacity: 0; pointer-events: none; transition: opacity 0.2s; text-align: center;
 }
 .toast.show { opacity: 1; }
+
+/* ===== 项圈 ===== */
+.collar { background: var(--surface); border-radius: 20px; padding: 14px 16px; margin-top: 14px; box-shadow: var(--shadow); }
+.collar-h { display: flex; align-items: center; justify-content: space-between; }
+.collar-t { font-size: 15px; font-weight: 600; }
+.collar-s { font-size: 11px; padding: 2px 8px; border-radius: 10px; background: var(--sky); color: #1677ff; }
+.collar-s--off { background: #f2f3f5; color: var(--sub); }
+.collar-grid { display: flex; margin-top: 12px; }
+.collar-i { flex: 1; display: flex; flex-direction: column; }
+.collar-l { font-size: 11px; color: var(--sub); }
+.collar-v { margin-top: 4px; font-size: 18px; font-weight: 600; }

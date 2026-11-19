@@ -97,6 +97,8 @@ Page({
       device: { show: false, items: [] }
     },
 
+    collar: { show: false, onlineShow: false, online: false, items: [] },
+
     sheet: { visible: false, title: '', options: [], active: undefined, canConfirm: false },
     toastShow: false,
     toastText: ''
@@ -306,6 +308,27 @@ Page({
     if (caps.hasMore) tabs.push({ key: 'more', label: '更多', icon: ICON.tabMore, iconOn: ICON.tabMoreOn })
     if (!tabs.some(item => item.key === this.ui.tab)) this.ui.tab = 'home'
 
+    // ---- 项圈（Wi-Fi 近场报给边缘网关，随网关统一送云）----
+    const collarItems = []
+    if (caps.hasProperty('pet_body_temperature')) {
+      const temp = number(d.pet_body_temperature)
+      collarItems.push({ k: '体温', v: temp === null ? EMPTY : numberText(temp, 1) + '℃' })
+    }
+    if (caps.hasProperty('pet_heart_rate')) {
+      const heart = number(d.pet_heart_rate)
+      collarItems.push({ k: '心率', v: heart === null ? EMPTY : numberText(heart, 0) + ' bpm' })
+    }
+    if (caps.hasProperty('collar_battery')) {
+      const battery = number(d.collar_battery)
+      collarItems.push({ k: '电量', v: battery === null ? EMPTY : numberText(battery, 0) + '%' })
+    }
+    const collar = {
+      show: collarItems.length > 0 || caps.hasProperty('collar_online'),
+      onlineShow: caps.hasProperty('collar_online'),
+      online: number(d.collar_online) === 1,
+      items: collarItems
+    }
+
     const report = this.reportView(caps)
     const timeline = [...this.platform.timeline].reverse().map(item => ({
       id: item.id, time: item.time, text: item.text, color: TL_COLORS[item.type] || '#ffab7a'
@@ -363,7 +386,8 @@ Page({
       notes: this.platform.notes || [],
       timeline,
       photos,
-      more
+      more,
+      collar
     })
   },
 

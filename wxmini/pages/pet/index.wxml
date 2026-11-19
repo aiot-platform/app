@@ -99,6 +99,20 @@
       </view>
     </view>
 
+    <!-- 项圈：Wi-Fi 近场报给边缘网关，随网关统一送云 -->
+    <view class="collar" wx:if="{{collar.show}}">
+      <view class="collar-h">
+        <text class="collar-t">{{petName}}的项圈</text>
+        <text class="collar-s {{collar.online?'':'collar-s--off'}}" wx:if="{{collar.onlineShow}}">{{collar.online?'在线':'离线'}}</text>
+      </view>
+      <view class="collar-grid">
+        <view class="collar-i" wx:for="{{collar.items}}" wx:key="k">
+          <text class="collar-l">{{item.k}}</text>
+          <text class="collar-v">{{item.v}}</text>
+        </view>
+      </view>
+    </view>
+
     <!-- 状态卡：AI 识别 + 活跃度环 + 环境瓦片 -->
     <view class="card" wx:if="{{statusShow}}">
       <view class="card-h"><text>{{petName}}的状态</text><text class="card-h-sub">设备实时识别</text></view>

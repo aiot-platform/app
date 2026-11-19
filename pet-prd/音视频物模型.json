@@ -227,6 +227,68 @@
       },
       "description": "设备投喂器今日还可投喂的次数，只读，由店铺设定上限。",
       "sort": 14
+    },
+    {
+      "id": 33,
+      "code": "collar_online",
+      "name": "项圈在线状态",
+      "accessMode": "r",
+      "required": false,
+      "dataType": "bool",
+      "specs": {
+        "0": "离线",
+        "1": "在线"
+      },
+      "description": "项圈通过 Wi-Fi 近场把数据报给边缘网关（带摄像头的网关再送云）时的在线状态，只读。",
+      "sort": 33
+    },
+    {
+      "id": 34,
+      "code": "collar_battery",
+      "name": "项圈电量",
+      "accessMode": "r",
+      "required": false,
+      "dataType": "int",
+      "specs": {
+        "min": 0,
+        "max": 100,
+        "step": 1,
+        "unit": "%"
+      },
+      "description": "项圈电池剩余电量，只读。",
+      "sort": 34
+    },
+    {
+      "id": 35,
+      "code": "pet_body_temperature",
+      "name": "宠物体温",
+      "accessMode": "r",
+      "required": false,
+      "dataType": "float",
+      "specs": {
+        "min": 30,
+        "max": 45,
+        "step": 0.1,
+        "unit": "℃"
+      },
+      "description": "项圈贴体测得的宠物体温，只读。",
+      "sort": 35
+    },
+    {
+      "id": 36,
+      "code": "pet_heart_rate",
+      "name": "宠物心率",
+      "accessMode": "r",
+      "required": false,
+      "dataType": "int",
+      "specs": {
+        "min": 0,
+        "max": 250,
+        "step": 1,
+        "unit": "bpm"
+      },
+      "description": "项圈光电容积脉搏波测得的心率，只读。",
+      "sort": 36
     }
   ],
   "events": [

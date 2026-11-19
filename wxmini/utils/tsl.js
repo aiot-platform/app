@@ -33,7 +33,11 @@ export const PROPERTIES = [
   { code: 'activity_level', access: 'r', dataType: 'int', min: 0, max: 100 },
   { code: 'env_temperature', access: 'r', dataType: 'float', min: -20, max: 60 },
   { code: 'env_humidity', access: 'r', dataType: 'int', min: 0, max: 100 },
-  { code: 'treat_left', access: 'r', dataType: 'int', min: 0, max: 10 }
+  { code: 'treat_left', access: 'r', dataType: 'int', min: 0, max: 10, unit: '次' },
+  { code: 'collar_online', access: 'r', dataType: 'bool' },
+  { code: 'collar_battery', access: 'r', dataType: 'int', min: 0, max: 100, unit: '%' },
+  { code: 'pet_body_temperature', access: 'r', dataType: 'float', min: 30, max: 45, digits: 1, unit: '℃' },
+  { code: 'pet_heart_rate', access: 'r', dataType: 'int', min: 0, max: 250, unit: 'bpm' }
 ]
 
 export const SERVICES = [

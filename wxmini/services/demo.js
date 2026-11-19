@@ -23,7 +23,11 @@ export const INITIAL_VALUES = {
   activity_level: 72,
   env_temperature: 26.5,
   env_humidity: 55,
-  treat_left: 2
+  treat_left: 2,
+  collar_online: 1,
+  collar_battery: 82,
+  pet_body_temperature: 38.6,
+  pet_heart_rate: 96
 }
 
 function delay(ms) {
