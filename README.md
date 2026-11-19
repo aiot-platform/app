@@ -2,8 +2,8 @@
 
 基于 Vue 3 + uni-app 实现的宠物寄养看护面板，可构建 H5 / Android / iOS 三端，配套阿里云实时音视频（RTC）实现远程看护与对讲。设备数据链路复用 ThingsPanel 后端，与微信小程序端共用同一套物模型与接口约定。
 
-- 原型：[pet-prd/音视频交互原型.html](../pet-prd/音视频交互原型.html)
-- 物模型：[pet-prd/音视频物模型.json](../pet-prd/音视频物模型.json)（ProductKey `a1AvPanel001`）
+- 原型：[pet-prd/音视频交互原型.html](pet-prd/音视频交互原型.html)
+- 物模型：[pet-prd/音视频物模型.json](pet-prd/音视频物模型.json)（ProductKey `a1AvPanel001`）
 - 页面入口：`app/pages/pet/index.vue`，能力与数据实现位于 `app/features/pet/`
 
 ---
