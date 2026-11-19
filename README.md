@@ -47,7 +47,7 @@ Tab 入口随设备能力**级联隐藏**：不支持的属性/服务对应的 U
 
 ### 6. 异常提示
 
-读取 30 分钟内的设备事件，按严重级别取最高一条展示告警条（推流异常 / 存储卡异常 / 舍内温度异常 / 吠叫提醒），可关闭；关闭仅隐藏提示，不代表清除设备事件。
+读取 30 分钟内的设备事件，按严重级别取最高一条展示告警条（推流异常 / 存储卡异常 / 舍内温度异常 / 吠叫提醒 / 项圈电量低 / 项圈离线 / 生理指标异常），可关闭；关闭仅隐藏提示，不代表清除设备事件。
 
 ### 7. 多端实时音视频实现路径
 
@@ -165,7 +165,7 @@ POST /api/v1/pet/album     { device_id, url, time }
 
 **服务（4）**：`start_live`（入参 `quality`）、`stop_live`、`snapshot`、`dispense_treat`
 
-**事件（4）**：
+**事件（7）**：
 
 | code | level | 输出参数 |
 | --- | --- | --- |
@@ -173,6 +173,9 @@ POST /api/v1/pet/album     { device_id, url, time }
 | `sd_card_error` | WARN | `sd_error_status` |
 | `bark_alert` | INFO | `volume_db` |
 | `env_abnormal` | WARN | `abnormal_type`、`value` |
+| `collar_low_battery` | WARN | `battery` |
+| `collar_offline` | WARN | — |
+| `pet_health_abnormal` | WARN | `type`（0 体温过高 / 1 体温过低 / 2 心率过快 / 3 心率过慢）、`value` |
 
 接入必选（缺失时仍按兜底渲染）：属性 `av_status`，服务 `start_live` / `stop_live`。
 

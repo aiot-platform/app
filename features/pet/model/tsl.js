@@ -17,7 +17,8 @@ export const ENUMS = {
   sdStatus: { 0: '未插卡', 1: '正常', 2: '异常', 3: '格式化中' },
   petActivity: { 0: '未检测到宠物', 1: '正在休息', 2: '正在睡觉', 3: '正在玩耍', 4: '正在进食', 5: '正在喝水' },
   errorCode: { 0: '编码器故障', 1: '摄像头无信号', 2: '网络拥塞' },
-  abnormalType: { 0: '温度过高', 1: '温度过低', 2: '湿度异常' }
+  abnormalType: { 0: '温度过高', 1: '温度过低', 2: '湿度异常' },
+  healthType: { 0: '体温过高', 1: '体温过低', 2: '心率过快', 3: '心率过慢' }
 }
 
 export const PROPERTIES = [
@@ -45,7 +46,10 @@ export const EVENTS = [
   { id: 15, code: 'stream_error', level: 'ERROR', outputs: [{ code: 'error_code', enumKey: 'errorCode', values: [0, 1, 2] }] },
   { id: 17, code: 'sd_card_error', level: 'WARN', outputs: [{ code: 'sd_error_status', enumKey: 'sdStatus', values: [0, 1, 2, 3] }] },
   { id: 19, code: 'bark_alert', level: 'INFO', outputs: [{ code: 'volume_db', dataType: 'int', unit: 'dB' }] },
-  { id: 21, code: 'env_abnormal', level: 'WARN', outputs: [{ code: 'abnormal_type', enumKey: 'abnormalType', values: [0, 1, 2] }, { code: 'value', dataType: 'float', unit: '' }] }
+  { id: 21, code: 'env_abnormal', level: 'WARN', outputs: [{ code: 'abnormal_type', enumKey: 'abnormalType', values: [0, 1, 2] }, { code: 'value', dataType: 'float', unit: '' }] },
+  { id: 37, code: 'collar_low_battery', level: 'WARN', outputs: [{ code: 'battery', dataType: 'int', unit: '%' }] },
+  { id: 39, code: 'collar_offline', level: 'WARN', outputs: [] },
+  { id: 40, code: 'pet_health_abnormal', level: 'WARN', outputs: [{ code: 'type', enumKey: 'healthType', values: [0, 1, 2, 3] }, { code: 'value', dataType: 'float', unit: '' }] }
 ]
 
 export const SERVICES = [
@@ -66,7 +70,7 @@ export const SERVICE_BY_CODE = Object.fromEntries(SERVICES.map(item => [item.cod
 export const MORE_GROUPS = {
   watch: ['video_quality', 'mic_switch', 'speaker_volume'],
   picture: ['night_vision', 'image_flip'],
-  device: ['viewer_count', 'wifi_rssi', 'sd_status']
+  device: ['viewer_count', 'wifi_rssi', 'sd_status', 'collar_online', 'collar_battery']
 }
 
 // 默认写入类型：属性按平台约定走遥测下发，服务走命令下发；模型里能查到真实类型时以模型为准。

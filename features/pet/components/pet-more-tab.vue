@@ -52,6 +52,14 @@
         <text class="pet-more-label">存储卡状态</text>
         <text class="pet-more-value">{{ sdText }}</text>
       </view>
+      <view v-if="has('collar_online')" class="pet-more-row">
+        <text class="pet-more-label">项圈在线状态</text>
+        <text class="pet-more-value">{{ collarOnlineText }}</text>
+      </view>
+      <view v-if="has('collar_battery')" class="pet-more-row">
+        <text class="pet-more-label">项圈电量</text>
+        <text class="pet-more-value">{{ collarBatteryText }}</text>
+      </view>
     </view>
 
     <pet-sheet :visible="qualitySheet" title="选择画质" :options="qualityOptions"
@@ -104,7 +112,15 @@ export default {
       return value === null ? '--' : `${numberText(value, 0)} 人`
     },
     wifi() { return wifiText(this.values.wifi_rssi) },
-    sdText() { return enumText('sdStatus', this.num(this.values.sd_status)) }
+    sdText() { return enumText('sdStatus', this.num(this.values.sd_status)) },
+    collarBatteryText() {
+      const value = this.num(this.values.collar_battery)
+      return value === null ? '--' : `${numberText(value, 0)}%`
+    },
+    collarOnlineText() {
+      const value = this.num(this.values.collar_online)
+      return value === null ? '--' : value === 1 ? '在线' : '离线'
+    }
   },
   methods: {
     has(code) { return this.capabilities.hasProperty(code) },

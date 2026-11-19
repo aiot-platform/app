@@ -114,9 +114,16 @@ export default {
 .pet-player-stage { position: relative; width: 100%; height: 260px; }
 /* 全屏：把画面铺满当前页面，底栏保持可点（H5/App 通用，App 侧不申请原生全屏以复用同一套布局）。 */
 .pet-player-stage--fullscreen { position: fixed; left: 0; top: 0; right: 0; bottom: 0; width: auto; height: auto; margin: 0; border-radius: 0; z-index: 99; }
-/* 演示模式没有真实画面，给一个占位视觉，避免纯黑让人误判为播放失败。 */
-.pet-player-demo { position: absolute; left: 0; right: 0; top: 0; bottom: 0; display: flex; align-items: center; justify-content: center; background: linear-gradient(160deg, #2b3440, #101318); }
-.pet-player-demo-icon { font-size: 56px; }
+/* 演示模式没有真实画面：用一只来回跑动的小狗做占位视觉，避免纯黑让人误判为播放失败。 */
+.pet-player-demo { position: absolute; left: 0; right: 0; top: 0; bottom: 0; overflow: hidden; background: linear-gradient(160deg, #2b3440, #101318); }
+.pet-player-demo-icon { position: absolute; top: 50%; margin-top: -34px; font-size: 56px; line-height: 68px; animation: pet-dog-run 7s linear infinite; }
+@keyframes pet-dog-run {
+  0% { left: -16%; transform: scaleX(1); }
+  48% { left: 100%; transform: scaleX(1); }
+  50% { left: 100%; transform: scaleX(-1); }
+  98% { left: -16%; transform: scaleX(-1); }
+  100% { left: -16%; transform: scaleX(1); }
+}
 .pet-player-cover { position: absolute; left: 0; right: 0; top: 0; bottom: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 0 24px; text-align: center; }
 .pet-player-cover-title { color: #f5f7fa; font-size: 15px; font-weight: 600; }
 .pet-player-cover-hint { margin-top: 8px; color: rgba(245, 247, 250, .7); font-size: 12px; line-height: 18px; }

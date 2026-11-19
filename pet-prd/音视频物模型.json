@@ -392,6 +392,73 @@
       ],
       "description": "舍内温湿度超出舒适范围时上报，指标回到范围内后解除。",
       "sort": 21
+    },
+    {
+      "id": 37,
+      "code": "collar_low_battery",
+      "name": "项圈电量低",
+      "type": "alert",
+      "subType": "WARN",
+      "outputData": [
+        {
+          "code": "battery",
+          "name": "剩余电量",
+          "dataType": "int",
+          "specs": {
+            "min": 0,
+            "max": 100,
+            "step": 1,
+            "unit": "%"
+          },
+          "id": 38
+        }
+      ],
+      "description": "项圈电量低于阈值时上报，提醒店员充电。",
+      "sort": 37
+    },
+    {
+      "id": 39,
+      "code": "collar_offline",
+      "name": "项圈离线",
+      "type": "alert",
+      "subType": "WARN",
+      "outputData": [],
+      "description": "项圈与边缘网关断连超时后上报，collar_online 同步变为离线。",
+      "sort": 39
+    },
+    {
+      "id": 40,
+      "code": "pet_health_abnormal",
+      "name": "宠物生理指标异常",
+      "type": "alert",
+      "subType": "WARN",
+      "outputData": [
+        {
+          "code": "type",
+          "name": "异常类型",
+          "dataType": "enum",
+          "specs": {
+            "0": "体温过高",
+            "1": "体温过低",
+            "2": "心率过快",
+            "3": "心率过慢"
+          },
+          "id": 41
+        },
+        {
+          "code": "value",
+          "name": "当前值",
+          "dataType": "float",
+          "specs": {
+            "min": 0,
+            "max": 250,
+            "step": 0.1
+          },
+          "id": 42
+        }
+      ],
+      "description": "项圈测得的体温或心率超出正常范围时上报，指标回到范围内后解除。",
+      "sort": 40
     }
   ],
   "services": [
