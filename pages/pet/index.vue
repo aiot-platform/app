@@ -210,6 +210,17 @@ export default {
         const value = data.value === undefined ? '--' : data.value
         return `舍内温度异常（${value}℃），店员已收到通知`
       }
+      if (event.code === 'collar_low_battery') {
+        const battery = data.battery === undefined ? '--' : data.battery
+        return `项圈电量偏低（${battery}%），请提醒店员充电`
+      }
+      if (event.code === 'collar_offline') return '项圈已离线，暂时收不到项圈数据'
+      if (event.code === 'pet_health_abnormal') {
+        const type = ENUMS.healthType[data.type] || ENUMS.unknown
+        const unit = data.type === 2 || data.type === 3 ? ' bpm' : '℃'
+        const value = data.value === undefined ? '--' : data.value
+        return `${this.petName}${type}（${value}${unit}），店员已收到通知`
+      }
       return '设备出现异常'
     },
     async onSnapshotSaved() {
