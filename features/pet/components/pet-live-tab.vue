@@ -21,6 +21,28 @@
       @start="startLive" @retry="startLive" @stop="stopLive" @toggle-mute="toggleMute" @toggle-talk="toggleTalk"
       @open-quality="openQuality" @fullscreen="fullscreen = !fullscreen" />
 
+    <!-- 项圈：Wi-Fi 近场报给边缘网关，随网关统一送云 -->
+    <view v-if="showCollar" class="pet-collar">
+      <view class="pet-collar-head">
+        <text class="pet-collar-title">{{ title }}的项圈</text>
+        <text v-if="capabilities.hasProperty('collar_online')" class="pet-collar-status" :class="{ 'pet-collar-status--off': !collarOnline }">{{ collarOnline ? '在线' : '离线' }}</text>
+      </view>
+      <view class="pet-collar-grid">
+        <view v-if="capabilities.hasProperty('pet_body_temperature')" class="pet-collar-item">
+          <text class="pet-collar-label">体温</text>
+          <text class="pet-collar-value">{{ collarTemp }}</text>
+        </view>
+        <view v-if="capabilities.hasProperty('pet_heart_rate')" class="pet-collar-item">
+          <text class="pet-collar-label">心率</text>
+          <text class="pet-collar-value">{{ collarHeart }}</text>
+        </view>
+        <view v-if="capabilities.hasProperty('collar_battery')" class="pet-collar-item">
+          <text class="pet-collar-label">电量</text>
+          <text class="pet-collar-value">{{ collarBattery }}</text>
+        </view>
+      </view>
+    </view>
+
     <view v-if="showStatusCard" class="pet-card">
       <view v-if="capabilities.hasProperty('pet_activity')" class="pet-card-activity">
         <text class="pet-card-icon">{{ activityIcon }}</text>
@@ -181,6 +203,23 @@ export default {
     },
     showEnvRow() {
       return this.capabilities.hasProperty('env_temperature') || this.capabilities.hasProperty('env_humidity')
+    },
+    showCollar() {
+      return this.capabilities.hasProperty('pet_body_temperature') || this.capabilities.hasProperty('pet_heart_rate') ||
+        this.capabilities.hasProperty('collar_battery') || this.capabilities.hasProperty('collar_online')
+    },
+    collarOnline() { return this.number(this.values.collar_online) === 1 },
+    collarTemp() {
+      const value = this.number(this.values.pet_body_temperature)
+      return value === null ? '--' : `${numberText(value, 1)}℃`
+    },
+    collarHeart() {
+      const value = this.number(this.values.pet_heart_rate)
+      return value === null ? '--' : `${numberText(value, 0)} bpm`
+    },
+    collarBattery() {
+      const value = this.number(this.values.collar_battery)
+      return value === null ? '--' : `${numberText(value, 0)}%`
     },
     temperatureText() {
       const value = this.number(this.values.env_temperature)
@@ -404,6 +443,15 @@ function toast(title) {
 .pet-env-label { display: block; color: #8b96a6; font-size: 11px; }
 .pet-env-value { display: block; margin-top: 4px; color: #1f2733; font-size: 17px; font-weight: 600; }
 .pet-env-tag { display: inline-block; margin-top: 4px; padding: 0 6px; border-radius: 8px; background: #f3f8ef; color: #4a8f3c; font-size: 10px; line-height: 16px; }
+.pet-collar { margin: 10px 16px 0; padding: 12px 14px; border-radius: 16px; background: #ffffff; }
+.pet-collar-head { display: flex; align-items: center; justify-content: space-between; }
+.pet-collar-title { color: #1f2733; font-size: 13px; font-weight: 600; }
+.pet-collar-status { padding: 1px 8px; border-radius: 9px; background: #eef6ff; color: #1677ff; font-size: 11px; line-height: 18px; }
+.pet-collar-status--off { background: #f2f3f5; color: #8b96a6; }
+.pet-collar-grid { display: flex; margin-top: 10px; }
+.pet-collar-item { flex: 1; display: flex; flex-direction: column; }
+.pet-collar-label { color: #8b96a6; font-size: 11px; }
+.pet-collar-value { margin-top: 4px; color: #1f2733; font-size: 16px; font-weight: 600; }
 .pet-quick { display: flex; margin: 12px 16px 0; }
 .pet-quick-item { flex: 1; margin: 0 10px 0 0; padding: 10px 8px; border: 0; border-radius: 14px; background: #ffffff; display: flex; flex-direction: column; align-items: center; }
 .pet-quick-item::after { border: 0; }

@@ -34,7 +34,11 @@ export const PROPERTIES = [
   { id: 11, code: 'activity_level', access: 'r', dataType: 'int', min: 0, max: 100, unit: '%' },
   { id: 12, code: 'env_temperature', access: 'r', dataType: 'float', min: -20, max: 60, digits: 1, unit: '℃' },
   { id: 13, code: 'env_humidity', access: 'r', dataType: 'int', min: 0, max: 100, unit: '%' },
-  { id: 14, code: 'treat_left', access: 'r', dataType: 'int', min: 0, max: 10, unit: '次' }
+  { id: 14, code: 'treat_left', access: 'r', dataType: 'int', min: 0, max: 10, unit: '次' },
+  { id: 33, code: 'collar_online', access: 'r', dataType: 'bool' },
+  { id: 34, code: 'collar_battery', access: 'r', dataType: 'int', min: 0, max: 100, unit: '%' },
+  { id: 35, code: 'pet_body_temperature', access: 'r', dataType: 'float', min: 30, max: 45, digits: 1, unit: '℃' },
+  { id: 36, code: 'pet_heart_rate', access: 'r', dataType: 'int', min: 0, max: 250, unit: 'bpm' }
 ]
 
 export const EVENTS = [

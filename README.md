@@ -14,7 +14,7 @@
 
 | Tab | 内容 | 出现条件 |
 | --- | --- | --- |
-| 实时 | 宠物卡片、实时画面、观看 HUD、宠物状态卡、快捷操作 | 常驻 |
+| 实时 | 宠物卡片、实时画面、观看 HUD、项圈卡片、宠物状态卡、快捷操作 | 常驻 |
 | 动态 | 今日日报、店员留言、今日动态时间线 | 常驻 |
 | 相册 | 抓拍照片网格、大图查看、新照片角标 | 设备支持 `snapshot` 服务时出现 |
 | 更多 | 观看设置 / 画面设置 / 设备状态 三组 | 存在任一可配置项时出现 |
@@ -159,7 +159,9 @@ POST /api/v1/pet/album     { device_id, url, time }
 
 按下述 TSL 在平台建好设备模板，字段缺失会被能力探测自动降级隐藏。平台映射：properties → 遥测，events → 事件，services → 命令。
 
-**属性（14）**：`av_status`、`video_quality`、`mic_switch`、`speaker_volume`、`night_vision`、`image_flip`、`viewer_count`、`wifi_rssi`、`sd_status`、`pet_activity`、`activity_level`、`env_temperature`、`env_humidity`、`treat_left`
+**属性（18）**：`av_status`、`video_quality`、`mic_switch`、`speaker_volume`、`night_vision`、`image_flip`、`viewer_count`、`wifi_rssi`、`sd_status`、`pet_activity`、`activity_level`、`env_temperature`、`env_humidity`、`treat_left`、`collar_online`、`collar_battery`、`pet_body_temperature`、`pet_heart_rate`
+
+其中后四项来自**宠物项圈**：项圈经 Wi-Fi 近场把数据报给边缘网关（带摄像头的网关），再由网关统一送云，因此与音视频共用同一台设备、同一套物模型。面板在实时画面下方以「项圈」卡片展示体温/心率/电量/在线状态，字段缺失时整块自动隐藏。
 
 **服务（4）**：`start_live`（入参 `quality`）、`stop_live`、`snapshot`、`dispense_treat`
 
