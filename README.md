@@ -51,7 +51,7 @@ Tab 入口随设备能力**级联隐藏**：不支持的属性/服务对应的 U
 
 ### 6. 异常提示
 
-读取 30 分钟内的设备事件，按严重级别取最高一条展示告警条（推流异常 / 存储卡异常 / 舍内温度异常 / 吠叫提醒），可关闭；关闭仅隐藏提示，不代表清除设备事件。
+读取 30 分钟内的设备事件，按严重级别取最高一条展示告警条（推流异常 / 存储卡异常 / 舍内温度异常 / 吠叫提醒 / 项圈电量低 / 项圈离线 / 生理指标异常），可关闭；关闭仅隐藏提示，不代表清除设备事件。
 
 ---
 
@@ -157,7 +157,7 @@ POST /api/v1/pet/album     { device_id, src, time }
 
 **服务（4）**：`start_live`、`stop_live`、`snapshot`、`dispense_treat`
 
-**事件（4）**：`stream_error`、`sd_card_error`、`bark_alert`、`env_abnormal`
+**事件（7）**：`stream_error`、`sd_card_error`、`bark_alert`、`env_abnormal`、`collar_low_battery`、`collar_offline`、`pet_health_abnormal`
 
 接入必选（缺失时仍按兜底渲染）：属性 `av_status`，服务 `start_live` / `stop_live`。
 

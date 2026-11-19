@@ -11,7 +11,8 @@ export const ENUMS = {
   sd_status: { 0: '未插卡', 1: '正常', 2: '异常', 3: '格式化中' },
   pet_activity: { 0: '未检测到宠物', 1: '正在休息', 2: '正在睡觉', 3: '正在玩耍', 4: '正在进食', 5: '正在喝水' },
   stream_error: { 0: '编码器故障', 1: '摄像头无信号', 2: '网络拥塞' },
-  start_live_result: { 0: '已开始推流', 1: '设备忙', 2: '观看人数已满', 3: '摄像头无信号' }
+  start_live_result: { 0: '已开始推流', 1: '设备忙', 2: '观看人数已满', 3: '摄像头无信号' },
+  healthType: { 0: '体温过高', 1: '体温过低', 2: '心率过快', 3: '心率过慢' }
 }
 
 // 画质档位对应的分辨率标签。
@@ -52,7 +53,7 @@ export const SERVICE_BY_CODE = Object.fromEntries(SERVICES.map(item => [item.cod
 // 默认写入类型：属性按平台约定走遥测下发，服务走命令下发；模型里能查到真实类型时以模型为准。
 export const DEFAULT_WRITE_KINDS = { property: 'telemetry', service: 'command' }
 
-export const EVENTS = ['stream_error', 'sd_card_error', 'bark_alert', 'env_abnormal']
+export const EVENTS = ['stream_error', 'sd_card_error', 'bark_alert', 'env_abnormal', 'collar_low_battery', 'collar_offline', 'pet_health_abnormal']
 
 export const ALL_CODES = PROPERTIES.map(item => item.code)
 export const ALL_SERVICES = SERVICES.map(item => item.code)
@@ -67,5 +68,5 @@ export const PROPERTY_BY_CODE = Object.fromEntries(PROPERTIES.map(item => [item.
 export const MORE_GROUPS = {
   watch: ['video_quality', 'mic_switch', 'speaker_volume'],
   picture: ['night_vision', 'image_flip'],
-  device: ['viewer_count', 'wifi_rssi', 'sd_status']
+  device: ['viewer_count', 'wifi_rssi', 'sd_status', 'collar_online', 'collar_battery']
 }

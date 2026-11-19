@@ -2,7 +2,7 @@
 // 交互与视觉对齐原型 pet-prd/音视频交互原型.html；数据链路复用 ThingsPanel 后端。
 import { ICON, PAWS, ringSource } from '../../utils/icons.js'
 import { buildCapabilities } from '../../utils/model.js'
-import { RES, SPEC } from '../../utils/tsl.js'
+import { RES, SPEC, ENUMS } from '../../utils/tsl.js'
 import { enumLabel, number, numberText, tempInfo, durationText, wifiText, clamp, EMPTY } from '../../utils/format.js'
 import { createPetRuntime } from '../../services/runtime.js'
 import { createDemoRuntime, createDemoRtcSession } from '../../services/demo.js'
@@ -409,6 +409,14 @@ Page({
     if (caps.hasProperty('viewer_count')) items.push({ k: '当前观看人数', v: numberText(d.viewer_count, 0) + ' 人' })
     if (caps.hasProperty('wifi_rssi')) items.push({ k: 'Wi-Fi 信号强度', v: wifiText(d.wifi_rssi) })
     if (caps.hasProperty('sd_status')) items.push({ k: '存储卡状态', v: enumLabel('sd_status', d.sd_status) })
+    if (caps.hasProperty('collar_online')) {
+      const online = number(d.collar_online)
+      items.push({ k: '项圈在线状态', v: online === null ? EMPTY : online === 1 ? '在线' : '离线' })
+    }
+    if (caps.hasProperty('collar_battery')) {
+      const battery = number(d.collar_battery)
+      items.push({ k: '项圈电量', v: battery === null ? EMPTY : numberText(battery, 0) + '%' })
+    }
     return items
   },
 
@@ -441,6 +449,19 @@ Page({
     }
     if (top.code === 'bark_alert') {
       return { cls: 'info', icon: ICON.alertInfo, closeIcon: ICON.closeInfo, text: petName + '在叫（约 ' + (data.volume_db || 72) + ' 分贝），店员正在关注', count: active.length }
+    }
+    if (top.code === 'collar_low_battery') {
+      const battery = data.battery === undefined ? '--' : data.battery
+      return { cls: 'warn', icon: ICON.alertWarn, closeIcon: ICON.closeWarn, text: `项圈电量偏低（${battery}%），请提醒店员充电`, count: active.length }
+    }
+    if (top.code === 'collar_offline') {
+      return { cls: 'warn', icon: ICON.alertWarn, closeIcon: ICON.closeWarn, text: '项圈已离线，暂时收不到项圈数据', count: active.length }
+    }
+    if (top.code === 'pet_health_abnormal') {
+      const type = ENUMS.healthType[data.type] || ENUMS.unknown
+      const unit = data.type === 2 || data.type === 3 ? ' bpm' : '℃'
+      const value = data.value === undefined ? '--' : data.value
+      return { cls: 'warn', icon: ICON.alertWarn, closeIcon: ICON.closeWarn, text: `${petName}${type}（${value}${unit}），店员已收到通知`, count: active.length }
     }
     return null
   },

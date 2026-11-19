@@ -49,7 +49,7 @@
       </block>
       <!-- 演示 / 未接入 SDK：占位视觉 -->
       <view class="demostage" wx:if="{{playing&&rtcMode!=='wx'}}">
-        <image class="demo-dog" src="{{ic.dog}}" mode="aspectFit" style="{{videoStyle}}" />
+        <view class="demo-track"><image class="demo-dog" src="{{ic.dog}}" mode="aspectFit" style="{{videoStyle}}" /></view>
         <view class="demo-tip"><text>模拟画面 · {{shopName}}</text><text>{{dur}}</text></view>
       </view>
 

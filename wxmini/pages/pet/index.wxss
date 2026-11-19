@@ -126,10 +126,18 @@
 /* 演示 / 未接入 SDK 的占位画面 */
 .demostage {
   position: absolute; left: 0; top: 0; width: 100%; height: 100%;
-  display: flex; align-items: center; justify-content: center;
+  overflow: hidden;
   background: radial-gradient(circle at 50% 35%, #ffb98a, #f08a55 60%, #d96d3c);
 }
+.demo-track { position: absolute; top: 50%; margin-top: -54px; animation: demo-dog-run 7s linear infinite; }
 .demo-dog { width: 108px; height: 108px; }
+@keyframes demo-dog-run {
+  0% { left: -30%; transform: scaleX(1); }
+  48% { left: 100%; transform: scaleX(1); }
+  50% { left: 100%; transform: scaleX(-1); }
+  98% { left: -30%; transform: scaleX(-1); }
+  100% { left: -30%; transform: scaleX(1); }
+}
 .demo-tip {
   position: absolute; left: 10px; bottom: 8px; right: 10px;
   display: flex; justify-content: space-between;
