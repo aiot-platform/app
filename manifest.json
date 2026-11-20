@@ -1,7 +1,7 @@
 {
-    "name" : "ThingsPanel",
-    "appid" : "__UNI__71E31D5",
-    "description" : "ThingsPanel物联网平台",
+    "name" : "宠物看护",
+    "appid" : "__UNI__70DB0E4",
+    "description" : "宠物看护 - 宠物托管实时看护",
     "versionName" : "2.0.8",
     "versionCode" : 208,
     "transformPx" : false,
