@@ -11,6 +11,18 @@
 			}
 		},
 		// #endif
+		// #ifndef H5
+		// App / 小程序首页：宠物家长 C 端登录，登录后进「我的宠物」；
+		// 该页内自带「先看演示面板」入口，可跳 pages/pet/index 预览演示数据。
+		{
+			"path": "pages/c/login/index",
+			"style": {
+				"navigationBarTitleText": "登录",
+				"enablePullDownRefresh": false,
+				"navigationStyle": "custom"
+			}
+		},
+		// #endif
 		{
 			"path": "pages/login/index",
 			"style": {
@@ -36,15 +48,8 @@
 				"navigationStyle": "custom"
 			}
 		},
-		// C 端（宠物家长）：登录 / 注册 / 宠物列表 / 扫码绑定
-		{
-			"path": "pages/c/login/index",
-			"style": {
-				"navigationBarTitleText": "登录",
-				"enablePullDownRefresh": false,
-				"navigationStyle": "custom"
-			}
-		},
+		// C 端（宠物家长）：注册 / 宠物列表 / 扫码绑定
+		// 注意：pages/c/login/index 已提前到文件开头作为 App 首页（#ifndef H5），此处不可重复声明。
 		{
 			"path": "pages/c/register/index",
 			"style": {
