@@ -45,6 +45,11 @@ import { appendAlbumPhoto, appendTimeline, bumpAlbumBadge, clearAlbumBadge, load
 // 面板标题：首页不显示标题，其余页签与底部入口一致。
 const TAB_TITLES = { live: '', timeline: '宠物动态', album: '相册', more: '更多' }
 
+// 演示模式标记：登录页「一键切换」时写入，与 pet-platform 服务共用。
+function readDemoFlag() {
+  try { return String(uni.getStorageSync('pet_demo_mode') || '') === '1' } catch { return false }
+}
+
 // 宠物看护面板容器：装配设备数据（物模型）+ 平台能力（本地 mock，接口待平台提供）+ 面板内导航。
 export default {
   components: { PetNav, PetLiveTab, PetTimelineTab, PetAlbumTab, PetMoreTab },
@@ -52,7 +57,7 @@ export default {
     return {
       deviceId: '',
       embed: false,
-      // 演示模式：显式 ?demo=1，或未登录时自动启用，保证 H5 里一进就能看到完整面板。
+      // 演示模式：显式 ?demo=1、登录页切换开关，或未登录时自动启用。
       demo: false,
       loading: true,
       loadError: '',
@@ -114,7 +119,7 @@ export default {
   onLoad(options = {}) {
     this.deviceId = String(options.device_id || options.deviceId || '')
     this.embed = String(options.embed || '') === '1'
-    this.demo = String(options.demo || '') === '1' || !uni.getStorageSync('access_token')
+    this.demo = String(options.demo || '') === '1' || readDemoFlag() || !uni.getStorageSync('access_token')
     // App 内嵌播放时，H5 上下文用自己的存储保存平台 token，与设备详情页的内嵌约定一致。
     if (this.embed && options.token) {
       try { uni.setStorageSync('access_token', String(options.token)) } catch (error) { console.warn('[pet] 内嵌登录态写入失败', error) }
