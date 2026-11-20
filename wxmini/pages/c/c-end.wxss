@@ -13,6 +13,10 @@
 .cend-brand { display: flex; flex-direction: column; align-items: center; margin-top: 120rpx; }
 .cend-brand-name { font-size: 42rpx; font-weight: 700; color: var(--ink); }
 .cend-slogan { margin-top: 12rpx; font-size: 26rpx; color: var(--sub); }
+.cend-mode { display: flex; align-items: center; justify-content: space-between; gap: 20rpx; margin-top: 48rpx; padding: 24rpx 28rpx; border-radius: 24rpx; background: #fff; box-shadow: var(--shadow); }
+.cend-mode-text { flex: 1; min-width: 0; }
+.cend-mode-title { font-size: 28rpx; font-weight: 600; color: var(--ink); }
+.cend-mode-desc { margin-top: 6rpx; font-size: 22rpx; color: var(--sub); }
 .cend-state { padding: 160rpx 0; text-align: center; font-size: 28rpx; color: var(--sub); }
 .cend-list { margin-top: 24rpx; }
 .cend-card { display: flex; align-items: center; padding: 28rpx; margin-bottom: 24rpx; border-radius: 24rpx; background: #fff; box-shadow: var(--shadow); }

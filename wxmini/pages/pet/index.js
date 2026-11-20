@@ -12,6 +12,11 @@ import {
   loadAlbum, loadDailyReport, loadProfile, loadStaffNotes, loadTimeline
 } from '../../services/platform.js'
 
+// 演示模式标记：登录页「一键切换」时写入，与 platform 服务共用。
+function readDemoFlag() {
+  try { return String(wx.getStorageSync('pet_demo_mode') || '') === '1' } catch (error) { return false }
+}
+
 // 宠物状态（AI 识别）的图标与配色，取自原型 ACT_STYLE。
 const ACTIVITY_STYLE = {
   0: { icon: 'moodNone', bg: '#f3efec', color: '#a39690' },
@@ -109,8 +114,8 @@ Page({
     this.deviceId = String(options.device_id || options.deviceId || '')
     if (options.token) wx.setStorageSync('access_token', String(options.token))
     if (options.server) wx.setStorageSync('serverAddress', String(options.server))
-    // 演示模式：显式 ?demo=1，或未登录时自动启用（等价 H5 预览）。
-    this.demo = String(options.demo || '') === '1' || !wx.getStorageSync('access_token')
+    // 演示模式：显式 ?demo=1、登录页切换开关，或未登录时自动启用（等价 H5 预览）。
+    this.demo = String(options.demo || '') === '1' || readDemoFlag() || !wx.getStorageSync('access_token')
     if (!this.deviceId) {
       if (this.demo) {
         this.deviceId = 'demo-device'

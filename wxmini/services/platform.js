@@ -35,7 +35,11 @@ function writeStore(key, list) {
 }
 
 function isDemoMode() {
-  try { return !isCLoggedIn() } catch (error) { return true }
+  try {
+    // 登录页可显式切换演示模式；未登录同样按演示处理。
+    if (String(wx.getStorageSync('pet_demo_mode') || '') === '1') return true
+    return !isCLoggedIn()
+  } catch (error) { return true }
 }
 
 // 演示数据（原型同一套示例）

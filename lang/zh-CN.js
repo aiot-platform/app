@@ -186,6 +186,9 @@ export default {
         noAccount: '还没有账号？',
         register: '立即注册',
         demo: '先看演示面板',
+        demoMode: '演示模式',
+        demoModeDesc: '无需登录，用示例数据预览完整面板',
+        enterDemo: '进入演示面板',
         failed: '登录失败，请检查手机号与密码',
         phoneInvalid: '请输入正确的手机号',
         passwordRequired: '请输入密码'

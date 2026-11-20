@@ -188,6 +188,9 @@ export default {
         noAccount: "Don't have an account?",
         register: 'Sign up',
         demo: 'Preview the demo panel',
+        demoMode: 'Demo mode',
+        demoModeDesc: 'Preview the full panel with sample data, no sign-in',
+        enterDemo: 'Enter demo panel',
         failed: 'Sign-in failed, check phone and password',
         phoneInvalid: 'Please enter a valid phone number',
         passwordRequired: 'Please enter your password'

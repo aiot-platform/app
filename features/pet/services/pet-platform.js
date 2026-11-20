@@ -41,7 +41,11 @@ function minutesAgo(minutes) {
 }
 
 function isDemoMode() {
-  try { return !isCLoggedIn() } catch { return true }
+  try {
+    // 登录页可显式切换演示模式；未登录同样按演示处理。
+    if (String(uni.getStorageSync('pet_demo_mode') || '') === '1') return true
+    return !isCLoggedIn()
+  } catch (error) { return true }
 }
 
 function byTimeDesc(a, b) {
